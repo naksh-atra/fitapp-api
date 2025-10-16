@@ -33,3 +33,12 @@ Thumbs.db
 
 # Directory structure
 project_structure.txt
+
+
+# Data files
+# Ignore all files inside data/
+data/**
+
+# But keep folder structure
+!data/
+!data/**/

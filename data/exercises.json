@@ -1,6 +1,0 @@
-[
-    {"id": "squat", "name": "Squat", "pattern": "knee_dominant", "equipment": ["Barbell", "Dumbbells", "Bodyweight"]},
-    {"id": "push_up", "name": "Push-up", "pattern": "horizontal_push", "equipment": ["Bodyweight"]},
-    {"id": "row", "name": "Dumbbell Row", "pattern": "horizontal_pull", "equipment": ["Dumbbells"]}
-  ]
-  
