@@ -82,11 +82,25 @@
 #     st.session_state["plan_v11"] = cached_generate_plan_v11(inputs_v11, None)
 # plan_dict = st.session_state["plan_v11"]
 
-# # Data
+# # Availability gate: block when evidence not used
+# extra = plan_dict.get("extra", {}) or {}
 # rows = plan_dict.get("rows") or []
-# if not rows:
-#     st.error("Plan could not be parsed this time; try again or adjust the tweak.")
+# if not extra.get("evidence_built", False) or not rows:
+#     st.error("Service temporarily unavailable — research evidence not loaded. Please retry.")
+#     col1, col2 = st.columns([1,1])
+#     with col1:
+#         if st.button("Retry now"):
+#             try:
+#                 cached_generate_plan_v11.clear()
+#             except Exception:
+#                 st.cache_data.clear()
+#             st.session_state["plan_v11"] = cached_generate_plan_v11(inputs_v11, tweak or None)
+#             st.rerun()
+#     with col2:
+#         st.caption(f"Status: snippets={extra.get('snippets_count', 0)} reason={extra.get('reason','unknown')}")
 #     st.stop()
+
+# # Data
 # df = pd.DataFrame(rows)
 
 # # Views
@@ -132,6 +146,7 @@
 
 # st.caption(f"Goal: {plan_dict.get('goal','?')} — Weeks: {plan_dict.get('week_count', 4)}")
 # # Sources remain server-side only (logged in plan generation).
+
 
 
 
