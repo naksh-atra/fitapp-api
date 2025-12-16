@@ -1,0 +1,15 @@
+﻿# KB Version Tracker
+# Tracks which version of KB repo these configs were generated from
+
+kb_repo_commit: "pending"
+kb_repo_url: "https://github.com/yourusername/KB"
+generated_date: "2025-12-16"
+notes: |
+  Initial config structure setup.
+  YAML files are placeholders - will be populated in Days 3-6.
+  
+  Structure:
+  - config/prescriptions/    : Training parameters (sets, reps, tempo, etc.)
+  - config/exercises/        : Exercise library with metadata
+  - config/selection_rules/  : Exercise selection logic per goal
+  - config/progressions/     : Week-to-week progression patterns
