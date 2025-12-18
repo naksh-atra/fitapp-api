@@ -1,0 +1,277 @@
+# Fat Loss Training Prescriptions
+# Source: KB/prescriptions/fatloss_prescriptions.pdf
+# Generated: 2025-12-18
+# Evidence Level: High (Meta-analyses 2018-2025)
+
+fatloss:
+  
+  # HIIT Circuits
+  hiit_circuits:
+    exercise_category: "High Intensity Interval Training Circuits"
+    
+    parameters:
+      work_interval_seconds: "20-40"
+      rest_interval_seconds: "20-40"
+      work_rest_ratio: "1:1 or 2:1"
+      rounds: "4-8 per circuit"
+      total_time_minutes: "15-30 including rest"
+      exercises_per_round: "4-6 compound movements prioritized"
+      intensity_percent_max: "85-95%"
+      intensity_rpe: "8-9"
+      frequency: "2-3 sessions per week"
+      
+      modalities:
+        - Bodyweight
+        - Kettlebell
+        - Battle ropes
+        - Rowing machine
+        - Assault bike
+        - Burpees
+        - Box jumps
+    
+    evidence_summary: |
+      HIIT and MICT produce similar fat mass reductions when energy matched. Short 
+      interval HIIT (20-40s) may reduce body fat percent more effectively. HIIT 
+      reduces BMI, body fat percent, waist-hip ratio while improving VO2max. HIIT 
+      achieves similar fat loss to continuous training in 40-60% less time.
+    
+    recommendations:
+      - "Short work intervals with equal or shorter rest maintain intensity across rounds"
+      - "Prioritize compound movements recruiting large muscle mass"
+      - "Progress by reducing rest or increasing rounds, not extending work beyond 40s"
+      - "Limit HIIT to 2-3 sessions per week to avoid recovery compromise"
+    
+    key_citations: "HIIT effectiveness meta-analyses 2023-2025 from Nature, PMC, Frontiers"
+
+  
+  # Metabolic Conditioning (MetCon)
+  metcon:
+    exercise_category: "Metabolic Conditioning Workouts"
+    
+    formats:
+      amrap:
+        name: "As Many Rounds As Possible"
+        duration_minutes: "12-20"
+        example: "15min AMRAP: 5 burpees, 10 box jumps, 15 KB swings"
+        pacing: "Aim for repeatable rounds, consistent pace"
+      
+      chipper:
+        name: "Single round descending reps"
+        example: "21-15-9 thrusters, pull-ups, burpees"
+        pacing: "Break as needed, complete all reps"
+      
+      emom:
+        name: "Every Minute On the Minute"
+        duration_minutes: "10-20"
+        structure: "Rotate 2-4 exercises"
+        pacing: "Complete work within minute, rest remainder"
+    
+    parameters:
+      rest_between_rounds: "2-3 minutes"
+      total_time_minutes: "20-40 including rest"
+      intensity_rpe: "7-8"
+      intensity_descriptor: "Maintain pace, avoid redlining"
+      exercises_per_workout: "3-5 targeting different movement patterns"
+      warmup: "5-10 minutes warmup and mobility work required"
+    
+    evidence_summary: |
+      AMRAP formats show similar calorie expenditure and cardiovascular demand. 
+      MetCon improves aerobic and anaerobic capacity and promotes fat oxidation 
+      during recovery. Compound movements create higher metabolic demand than 
+      isolation exercises. 7-minute burpee AMRAP comparable to 8-minute complex 
+      MetCon for calories burned.
+    
+    recommendations:
+      - "AMRAP encourages consistent pacing"
+      - "Select 3-5 exercises targeting different movement patterns"
+      - "Scale intensity by load, reps, or total duration"
+      - "Include 5-10 minute warmup and mobility work before MetCon"
+    
+    key_citations: "Metabolic conditioning studies 2022-2025 from The Sport Journal, PMC"
+
+  
+  # EPOC and Post-Exercise Energy Expenditure
+  epoc:
+    
+    characteristics:
+      hiit_epoc_short_duration_kj: "136"
+      hiit_epoc_long_duration_kj: "289"
+      mict_epoc_short_duration_kj: "101"
+      mict_epoc_long_duration_kj: "159"
+      duration: "Elevated oxygen consumption 3-16 hours post-exercise"
+      magnitude: "EPOC adds 6-15% additional calorie burn relative to exercise"
+      epoc_additional_calories: "30-75 kcal (modest contribution)"
+      metabolism_elevation_3hr: "13% above baseline"
+      metabolism_elevation_16hr: "4% above baseline"
+    
+    evidence_summary: |
+      HIIT produces higher EPOC than MICT: 136 vs 101 kJ short-duration, 289 vs 159 kJ 
+      long-duration. Elevated metabolism 13% at 3 hours post-exercise declining to 4% 
+      at 16 hours. EPOC adds modest extra expenditure (30-75 kcal); main fat loss 
+      driver remains caloric deficit. EPOC slightly lower in trained individuals due 
+      to metabolic efficiency.
+    
+    recommendations:
+      - "EPOC contributes to total daily energy expenditure but not primary fat loss strategy"
+      - "HIIT produces slightly greater EPOC than continuous training but practical difference small"
+      - "Focus on total weekly energy expenditure including NEAT"
+      - "Use EPOC as supplementary benefit, not primary focus"
+    
+    key_citations: "EPOC meta-analyses 2018-2022 from Scielo, Wiley, PubMed"
+
+  
+  # Steady-State Cardio
+  steady_state_cardio:
+    exercise_category: "Steady-State Cardiovascular Exercise"
+    
+    parameters:
+      duration_minutes: "30-60"
+      intensity_zone: "Zone 2-3"
+      intensity_hrmax_percent: "60-75%"
+      intensity_descriptor: "Conversational to slightly elevated breathing"
+      
+      cadence_pace:
+        running: "Comfortable pace"
+        cycling_rpm: "80-90"
+        rowing_spm: "20-24"
+      
+      frequency: "2-4 sessions per week"
+      purpose:
+        - "Active recovery"
+        - "Calorie expenditure"
+        - "Cardiovascular health"
+        - "NEAT supplementation"
+    
+    evidence_summary: |
+      HIIT and MICT produce similar fat mass reductions when total energy matched. 
+      Moderate-intensity continuous training may improve adherence. Combining aerobic 
+      with resistance training preserves lean mass better than aerobic alone. Some 
+      evidence MICT running more effective for waist circumference reduction.
+    
+    recommendations:
+      - "Steady-state cardio suitable for active recovery days"
+      - "Lower exertion allows higher frequency without fatigue or strength interference"
+      - "Can be performed fasted or fed"
+      - "Use as NEAT multiplier: walking, cycling, light jogging adds expenditure at low recovery cost"
+    
+    key_citations: "HIIT vs MICT comparison studies 2023-2025 from Nature, PMC, Frontiers"
+
+  
+  # Resistance Training Integration
+  resistance_training:
+    
+    parameters:
+      frequency: "3-4 full-body or upper/lower sessions per week"
+      priority: "Compound movements - squat, hinge, press, pull patterns"
+      weekly_volume_sets: "10-15 per muscle (maintain or slight reduction)"
+      intensity_1rm_percent: "75-85%"
+      intensity_adjustment: "Maintain load, reduce volume if recovery compromised"
+      protein_target_g_kg: "1.6-2.2"
+    
+    evidence_summary: |
+      Resistance training during energy restriction critical for muscle mass preservation. 
+      Higher protein intake combined with RT enhances lean mass retention. Concurrent 
+      RT with cardio effective for fat loss but manage fatigue; RT priority. Maintain 
+      RT volume near maintenance levels; excessive volume increases injury risk.
+    
+    recommendations:
+      - "Prioritize RT over cardio to preserve lean mass and metabolic rate"
+      - "Schedule RT before cardio when same session"
+      - "Monitor strength: >10% decline indicates excessive deficit or inadequate protein/recovery"
+      - "Reduce RT volume 20-30% if plateau occurs; add cardio/activity instead of further calorie reduction"
+    
+    key_citations: "Resistance training and protein meta-analyses 2024 from PMC, PubMed, Men's Health UK"
+
+  
+  # Work:Rest Ratios for Different Goals
+  work_rest_ratios:
+    
+    fat_oxidation_emphasis:
+      ratio: "1:2 or 1:3"
+      example: "30s work, 60-90s rest"
+      benefit: "Allows fuller recovery, higher fat oxidation"
+    
+    metabolic_stress_emphasis:
+      ratio: "1:1 or 2:1"
+      examples:
+        - "40s work, 40s rest"
+        - "40s work, 20s rest"
+      benefit: "Greater metabolic disturbance"
+    
+    power_maintenance:
+      ratio: "1:3 to 1:5"
+      example: "20s work, 60-100s rest"
+      benefit: "Preserves output quality"
+    
+    evidence_summary: |
+      Short work intervals (20-40s) with 1:1 or 2:1 ratios effective for body composition 
+      improvements. HIIT protocols with various ratios produce similar fat loss when total 
+      work and intensity matched. Shorter rest increases metabolic stress but may reduce 
+      completion; balance intensity with sustainability.
+    
+    recommendations:
+      - "Start conservative (1:2 or 1:3) for untrained, progress to 1:1 or 2:1"
+      - "Match ratio to session goal: fat oxidation = longer rest, metabolic stress = shorter rest, power = longest rest"
+      - "Monitor performance; if quality drops >10% by final round, increase rest or reduce rounds"
+    
+    key_citations: "Work:rest ratio studies 2023-2024 from PMC network meta-analyses"
+
+
+# Evidence Sources
+evidence_sources:
+  
+  hiit_vs_mict:
+    - "Comparative Effects HIIT and MICT 2024 - Nature"
+    - "HIIT Not Superior to Continuous Training 2023 - PMC"
+    - "Comparative Effects HIIT vs Continuous Training 2025 - Frontiers"
+  
+  hiit_protocols:
+    - "Systematic Review and Meta-Analysis HIIT Effectiveness 2025 - PMC"
+    - "Effect of HIIT Type on Body Composition 2023 - PMC"
+    - "Network Meta-Analysis RCTs HIIT 2024 - PMC"
+    - "Effects of HIIT on Physical Fitness 2025 - PMC"
+  
+  metabolic_conditioning:
+    - "Comparing Cardiovascular and Metabolic Demands HIFT 2023 - The Sport Journal"
+    - "Effectiveness Metabolic Resistance Training 2025 - PMC"
+    - "What is Metabolic Conditioning 2022 - Levels"
+    - "Systematic Review CrossFit Workouts - PDF"
+  
+  epoc:
+    - "Comparison EPOC Between HIIT and Continuous Training 2018 - Scielo"
+    - "Effect HIIT on Post-Exercise Oxygen Consumption Meta-Analysis 2022 - Scielo"
+    - "Magnitude and Duration EPOC Meta-Analysis - Wiley"
+    - "Magnitude and Duration EPOC 2021 - PubMed"
+    - "Excess Post-Exercise Oxygen Consumption - Wikipedia"
+    - "What is EPOC Explained 2020 - YouTube"
+  
+  resistance_training:
+    - "Effects Additional Protein on Lean Body Mass 2024 - PMC"
+    - "Enhanced Protein Intake on Maintaining Muscle Mass - Meta-Analysis"
+    - "Enhanced Protein Intake for Muscle Mass 2024 - PubMed"
+    - "Minimum Sets Per Week Muscle Strength 2024 - Men's Health UK"
+    - "Systematic Review and Meta-Analysis 2025 - PMC"
+  
+  general_fat_loss:
+    - "Aerobic Exercise and Weight Loss Adults 2006 - PMC"
+    - "HIIT Not Superior to Continuous Training - ScienceDirect"
+
+
+# Metadata
+metadata:
+  goal: "Fat Loss"
+  content_type: "Prescriptions"
+  parameters_covered:
+    - work_intervals
+    - rest_intervals
+    - rounds
+    - intensity
+    - duration
+    - modality
+    - epoc
+    - resistance_training_integration
+  evidence_level: "High"
+  evidence_period: "2018-2025"
+  source_file: "KB/prescriptions/fatloss_prescriptions.pdf"
+  converted_date: "2025-12-18"
+  application: "Workout generator fat loss programming"
