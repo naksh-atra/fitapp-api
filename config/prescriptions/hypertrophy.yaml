@@ -1,0 +1,192 @@
+# Hypertrophy Training Prescriptions
+# Source: KB/prescriptions/hypertrophy_prescriptions.pdf
+# Generated: 2025-12-18
+# Evidence Level: High (Meta-analyses 2023-2025)
+
+hypertrophy:
+  
+  # Main Compound Lifts
+  compound_lifts:
+    exercise_category: "Main Compound Lifts"
+    target_muscles:
+      - Chest
+      - Back
+      - Lats
+      - Quads
+      - Hamstrings
+      - Glutes
+      - Shoulders
+    
+    parameters:
+      sets: "3-5 per exercise"
+      reps: "6-10 per set"
+      tempo: "3010"  # 3s eccentric, 0s pause, 1s concentric, 0s top
+      tempo_alternative: "2010"
+      rest_seconds: "90-180"
+      intensity_rpe: "7-9"
+      intensity_rir: "1-3 on final sets, 3-4 on earlier sets"
+      weekly_volume_sets: "10-20 per major muscle group"
+    
+    evidence_summary: |
+      Meta-analysis shows 10+ sets per muscle weekly maximizes hypertrophy, 
+      with diminishing returns beyond 12-20 sets. Fractional set counting (2024) 
+      found 5-10 sets optimal with 4 sets minimum effective dose. Tempo research 
+      (2025) shows slower 3-second eccentrics enhance vastus lateralis hypertrophy 
+      for type I fibers. Rest interval meta-analysis (2024) suggests small benefit 
+      beyond 60s rest, no clear advantage beyond 90s. Proximity to failure 2024 
+      meta-regression confirms hypertrophy increases as sets approach failure.
+    
+    recommendations:
+      - "Emphasize controlled eccentric phase (3s)"
+      - "Progressive volume increases of 20-30% from baseline"
+      - "Rest 90-180s to maintain volume quality"
+      - "Training frequency 2-3 sessions per muscle weekly"
+    
+    key_citations: "Volume meta-analyses 2023-2025; tempo and rest studies from Frontiers in Physiology and JSCR"
+
+  
+  # Accessory Isolation Lifts
+  isolation_lifts:
+    exercise_category: "Accessory Isolation Lifts"
+    target_muscles:
+      - Biceps
+      - Triceps
+      - Calves
+      - Rear Delts
+      - Lateral Delts
+      - Abs
+      - Obliques
+    
+    parameters:
+      sets: "3-4 per exercise"
+      reps: "10-20 per set"
+      tempo: "2021 or 3021"
+      rest_seconds: "60-90"
+      intensity_rpe: "8-10"
+      intensity_rir: "0-2"
+      weekly_volume_sets: "6-12 per smaller muscle group"
+      advanced_tolerance: "15-20 sets"
+    
+    evidence_summary: |
+      Single-joint vs multi-joint volume-equated studies show similar hypertrophy 
+      when effort matched, but compounds offer time efficiency. Isolation volume 
+      for small muscles is 6-12 weekly sets, advanced lifters tolerate 15-20 sets. 
+      Controlled tempo with peak contraction may improve metabolic stress and 
+      mind-muscle connection. Isolation lifts tolerate 0-1 RIR with lower systemic 
+      fatigue than compounds. Shorter rest 60-90s sufficient for smaller muscles 
+      and enhances metabolic stress.
+    
+    recommendations:
+      - "Distribute isolation volume across the week"
+      - "Manage fatigue and maintain quality"
+      - "Use peak contraction (1s hold) for metabolic stress"
+    
+    key_citations: "2023-2025 hypertrophy and isolation training meta-analyses"
+
+  
+  # Volume Progression and Periodization
+  progression:
+    starting_volume: "Baseline assessment + 20-30% increase"
+    progression_rate: "Increase by 1-2 sets per muscle per week"
+    reassessment_frequency: "Every 3-4 weeks"
+    deload_frequency: "Every 4-6 weeks"
+    deload_protocol: "Reduce volume by 40-50% while maintaining intensity"
+    volume_cap: "~20 sets per muscle for most individuals"
+    volume_cap_upper_limit: "40 weekly sets (diminishing returns beyond this)"
+    
+    frequency_guidance:
+      sessions_per_week: "3-5"
+      benefit: "Improves volume distribution"
+    
+    evidence_summary: |
+      2025 studies show 30-60% increases from baseline more effective than fixed 
+      volume prescriptions. Progressive overload yields better hypertrophy than 
+      static volume. Diminishing returns beyond 40 weekly sets, practical cap 
+      around 20 per muscle for most. Higher frequencies (3-5x per week) improve 
+      volume distribution. Deloading every 4-6 weeks prevents overtraining and 
+      supports long-term progression.
+    
+    recommendations:
+      - "Monitor strength maintenance and recovery markers"
+      - "Individual tolerance varies significantly"
+      - "Progressive overload is superior to static volume"
+    
+    key_citations: "Systematic reviews and volume progression meta-analyses 2023-2025"
+
+  
+  # Tempo Specifications by Muscle Fiber Type
+  tempo_by_muscle:
+    quad_dominant:
+      tempo: "3010 or 4010"
+      rationale: "Slower eccentric enhances type I fiber growth"
+    
+    hamstrings_posterior:
+      tempo: "3010"
+      emphasis: "Lengthened position (e.g., RDL pattern)"
+    
+    chest_back:
+      tempo: "3010 or 2010"
+      emphasis: "Deep range of motion"
+    
+    arms_shoulders:
+      tempo: "2021 or 3021"
+      tempo_presses: "2010"
+    
+    evidence_summary: |
+      Eccentric duration of 2-4s is effective, longer (4-6s) may give specific 
+      benefits but not universal. Muscles with high type I fiber composition 
+      respond best to slower eccentrics. Tempo notation follows eccentric-pause-
+      concentric-top hold pattern (e.g., 3010). Long-length training is more 
+      impactful than tempo manipulation alone. Slower eccentrics increase 
+      difficulty without extra load but excessive slowing may impair adherence. 
+      Athletes training for power should limit slow tempo work.
+    
+    tempo_notation_guide:
+      format: "Eccentric-Pause-Concentric-Top Hold"
+      example: "3010 = 3s down, 0s pause, 1s up, 0s top"
+    
+    key_citations: "Tempo and muscle fiber hypertrophy studies 2023-2025"
+
+  
+  # Long-Length and Stretch-Mediated Training
+  long_length_training:
+    principle: "Emphasize movements with deep muscle lengthening"
+    
+    exercise_examples:
+      - "Incline curls"
+      - "RDLs (Romanian Deadlifts)"
+      - "Deep squats"
+      - "Fly variations with long range"
+    
+    recommendations:
+      - "Include at least one long-length variation per major muscle group per week"
+      - "Load in lengthened position (e.g., RDL or deep lunge)"
+      - "Combine with moderate tempo (2-3s eccentric) for maximal stimulus"
+    
+    evidence_summary: |
+      Stretch-mediated hypertrophy evidence indicates enhanced sarcomere addition 
+      and fascicle length increases. Load in the lengthened position enhances 
+      hypertrophy beyond mid-range training.
+    
+    key_citations: "2023-2025 stretch-mediated hypertrophy meta-analyses and Frontiers in Sports Science"
+
+
+# Metadata
+metadata:
+  goal: "Hypertrophy"
+  content_type: "Prescriptions"
+  parameters_covered:
+    - sets
+    - reps
+    - tempo
+    - rest
+    - volume
+    - frequency
+    - intensity
+    - progression
+    - long_length_emphasis
+  evidence_level: "High"
+  evidence_period: "2023-2025"
+  source_file: "KB/prescriptions/hypertrophy_prescriptions.pdf"
+  converted_date: "2025-12-18"
+  application: "Workout generator parameter selection and hypertrophy program design"
