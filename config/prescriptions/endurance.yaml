@@ -1,0 +1,236 @@
+# Endurance Training Prescriptions
+# Source: KB/prescriptions/endurance_prescriptions.pdf
+# Generated: 2025-12-18
+# Evidence Level: High (Meta-analyses 2018-2025)
+
+endurance:
+  
+  # Zone 2 Aerobic Base Training
+  zone_2_aerobic_base:
+    exercise_category: "Low Intensity Aerobic Base"
+    
+    parameters:
+      duration_minutes: "30-90 per session"
+      intensity_zone: "Zone 2"
+      intensity_hrmax_percent: "60-75%"
+      intensity_descriptor: "Conversational pace - can speak in full sentences"
+      
+      cadence_pace:
+        running_spm: "170-180"
+        cycling_rpm: "85-95"
+        rowing_spm: "18-22"
+      
+      frequency: "3-5 sessions per week"
+      
+      modalities:
+        - Running
+        - Cycling
+        - Rowing
+        - Swimming
+    
+    evidence_summary: |
+      Zone 2 intensity below lactate threshold: 60-75% HRmax or less than 2 mmol/L 
+      blood lactate. Zone 2 training increases mitochondrial density and fat oxidation. 
+      Elite athletes spend 80-90% training in Zone 1-2 supporting low intensity base. 
+      2025 study shows variability in Zone 2 markers; personalized prescription via 
+      VT1 or FatMax better than fixed HR percent.
+    
+    recommendations:
+      - "Zone 2 should feel easy, conversation possible"
+      - "Use HR, lactate, or ventilatory testing for individual precision"
+      - "Progress volume gradually using 10% weekly increase"
+      - "Maintain 2-3 sessions per week during competitive phase"
+    
+    key_citations: "Zone 2 training studies 2018-2025 from InsideTracker, MyMottiv, PMC"
+
+  
+  # Lactate Threshold and Tempo Training
+  lactate_threshold_tempo:
+    exercise_category: "Threshold and Tempo Work"
+    
+    parameters:
+      duration_continuous: "20-40 minutes continuous tempo"
+      duration_intervals: "4-6 intervals of 8-12 minutes each"
+      intensity_zone: "Zone 3-4"
+      intensity_hrmax_percent: "75-85%"
+      intensity_descriptor: "Lactate threshold - comfortably hard"
+      
+      cadence_pace:
+        running: "10K pace or slightly slower"
+        cycling_rpm: "90-100"
+        rowing_spm: "24-28"
+      
+      rest_intervals: "2-4 minutes easy recovery"
+      frequency: "1-2 sessions per week"
+    
+    evidence_summary: |
+      Lactate threshold occurs around 80-85% HRmax or 2-4 mmol/L lactate. Training 
+      near threshold improves endurance in sedentary and trained individuals. 
+      Lactate-guided intervals between 2-4.5 mmol effective in elite athletes. 
+      Continuous and interval tempo formats both work; intervals may allow greater 
+      total time near threshold.
+    
+    recommendations:
+      - "Threshold work improves sustainable race pace more than VO2max sessions for long events"
+      - "Use lactate monitor if available to target 2-4 mmol"
+      - "Progress duration before intensity"
+      - "Allow 48-72 hours recovery before next VO2max session"
+    
+    key_citations: "Lactate threshold studies 1997-2025 from PMC, PubMed, Marathon Handbook"
+
+  
+  # VO2max Interval Training
+  vo2max_intervals:
+    exercise_category: "High Intensity VO2max Intervals"
+    
+    parameters:
+      duration_work: "3-5 minutes per interval"
+      duration_alternative: "800-1200 meter repeats"
+      intensity_zone: "Zone 5"
+      intensity_hrmax_percent: "90-95%"
+      intensity_descriptor: "Near maximal"
+      
+      cadence_pace:
+        running: "5K pace"
+        cycling_rpm: "95-105"
+        rowing_spm: "30-36"
+      
+      rest_intervals: "Equal or longer recovery - 3-5 minutes easy"
+      rounds: "4-6 repeats"
+      total_work_time: "12-20 minutes total high intensity work"
+      work_rest_ratio: "1:1 or 1:1.5"
+      frequency: "1 session per week"
+    
+    evidence_summary: |
+      Long intervals (2 minutes or more) and total work 15 minutes or more most 
+      effective for VO2max. HIIT improves VO2max after 3-6 weeks, adaptation plateaus 
+      beyond that. 4x4 minute protocol at 85-95% HRmax validated for VO2max. Gains 
+      depend on baseline fitness; larger effects in less trained individuals.
+    
+    recommendations:
+      - "Aim for 12-20 minutes total high intensity work"
+      - "VO2max work is fatiguing - schedule one per week with 48-72 hour recovery"
+      - "If last interval drops more than 5% from first, reduce rounds or increase rest"
+      - "Use work:rest ratio of 1:1 or 1:1.5"
+    
+    key_citations: "HIIT and VO2max studies 2019-2025 from PMC, Frontiers, PubMed"
+
+  
+  # Training Intensity Distribution
+  intensity_distribution:
+    
+    polarized_model:
+      description: "80% easy, 20% hard"
+      zone_1_2_easy: "80%"
+      zone_3_4_threshold: "<5%"
+      zone_5_high_intensity: "15-20%"
+      suitable_for: "VO2max efficiency, short-term trained athletes"
+    
+    pyramidal_model:
+      description: "70-75% easy, 20-25% threshold, 5-10% high intensity"
+      zone_1_2_easy: "70-75%"
+      zone_3_4_threshold: "20-25%"
+      zone_5_high_intensity: "5-10%"
+      suitable_for: "Recreational athletes, those who tolerate tempo work better"
+    
+    evidence_summary: |
+      Meta-analysis shows polarized training slightly outperforms others for VO2peak, 
+      especially in short-term trained athletes. Pyramidal training yields similar 
+      results in recreational athletes. Elite endurance athletes often use 80/20 or 
+      similar distributions. Both emphasize low intensity foundation; difference lies 
+      in threshold versus VO2max emphasis.
+    
+    recommendations:
+      - "Prefer polarized (80 easy/20 hard) for VO2max efficiency"
+      - "Use pyramidal if athlete tolerates steady tempo work better"
+      - "Avoid moderate intensity trap - spending too long at 75-85%"
+      - "Monitor weekly zone distribution"
+    
+    key_citations: "Polarized vs pyramidal meta-analyses 2024 from PubMed, systematic reviews"
+
+  
+  # Heart Rate Zone Guidelines
+  heart_rate_zones:
+    
+    zone_definitions:
+      zone_1:
+        hrmax_percent: "50-60%"
+        purpose: "Recovery"
+      
+      zone_2:
+        hrmax_percent: "60-70%"
+        purpose: "Aerobic base - conversational"
+      
+      zone_3:
+        hrmax_percent: "70-80%"
+        purpose: "Tempo"
+      
+      zone_4:
+        hrmax_percent: "80-90%"
+        purpose: "Lactate threshold"
+      
+      zone_5:
+        hrmax_percent: "90-100%"
+        purpose: "VO2max"
+    
+    evidence_summary: |
+      HR zones provide simple intensity prescription when pace or power data unavailable. 
+      Fixed percent HRmax has high individual variability; prefer lab-tested thresholds. 
+      VT1 or FatMax testing improves accuracy of Zone 2 determination.
+    
+    recommendations:
+      - "Use HR as a guide but adjust for drift, heat, altitude, and fatigue"
+      - "Recalibrate zones every 8-12 weeks or after large fitness change"
+      - "RPE and talk test useful when HR unreliable"
+    
+    key_citations: "HR zone studies 2018-2025 from PMC, Erg Monkey"
+
+
+# Evidence Sources
+evidence_sources:
+  
+  zone_2_aerobic:
+    - "Zone 2 Heart Rate Training 2024 - InsideTracker"
+    - "Zone 2 Training Explained 2023 - MyMottiv"
+    - "Heart Rate Acquisition and Threshold-Based Training 2018 - PMC"
+    - "Do We Really Need Zone 2 Exercise for Mitochondrial Health 2025 - Broken Science"
+    - "Zone 2 Intensity Individual Variability 2025 - PMC"
+  
+  lactate_threshold:
+    - "Lactate-Guided Threshold Interval Training 2023 - PMC"
+    - "Lactate Threshold vs VO2 Max 2025 - Runners Connect"
+    - "Effect of Training on Lactate Thresholds 1997 - PubMed"
+    - "Lactate Threshold Training 2025 - Marathon Handbook"
+    - "Lactate Threshold Predicting Time-Trial Performance 2011 - PMC"
+  
+  vo2max_hiit:
+    - "Comparison of Interval Training Methods 2025 - PMC"
+    - "Effects of HIIT Compared to Moderate Intensity 2019 - PMC"
+    - "Variable Continuous Training vs HIIT - Journal Article"
+    - "Which Training Intensity Distribution Improves VO2max 2025 - PubMed"
+    - "Meta Analyses HIIT 2025 - Frontiers"
+  
+  polarized_pyramidal:
+    - "Polarized Training vs Other Distributions 2024 - Systematic Review"
+    - "Comparison of Polarized vs Other Endurance Training 2024 - PubMed"
+  
+  heart_rate_zones:
+    - "How Heart Rate Zones Impact Personal Bests 2025 - Erg Monkey"
+
+
+# Metadata
+metadata:
+  goal: "Endurance Development"
+  content_type: "Prescriptions"
+  parameters_covered:
+    - duration
+    - intensity_zones
+    - cadence
+    - heart_rate
+    - intervals
+    - distribution
+  evidence_level: "High"
+  evidence_period: "2018-2025"
+  source_file: "KB/prescriptions/endurance_prescriptions.pdf"
+  converted_date: "2025-12-18"
+  application: "Workout generator endurance programming"
