@@ -1,0 +1,210 @@
+# Strength Training Prescriptions
+# Source: KB/prescriptions/strength_prescriptions.pdf
+# Generated: 2025-12-18
+# Evidence Level: High (Meta-analyses 2023-2025)
+
+strength:
+  
+  # Main Competition Lifts
+  main_lifts:
+    exercise_category: "Main Competition Lifts"
+    key_lifts:
+      - Back Squat
+      - Bench Press
+      - Deadlift
+      - Overhead Press
+    
+    parameters:
+      sets: "3-6 per exercise"
+      reps: "1-6"
+      reps_max_strength: "1-3 reps"
+      reps_strength_hypertrophy: "4-6 reps"
+      weight_1rm_percent_1_3_reps: "85-95% 1RM"
+      weight_1rm_percent_4_6_reps: "80-85% 1RM"
+      intensity_rpe: "8-9"
+      intensity_rir: "1-2 RIR"
+      intensity_testing: "RPE 9.5-10 for singles (testing/peaking)"
+      rest_seconds: "180-300"  # 3-5 minutes
+      weekly_volume_sets: "6-12 per main lift per week"
+    
+    evidence_summary: |
+      Meta-analysis confirms >80% 1RM superior for strength gains versus lower loads; 
+      dose-response relationship stronger in trained individuals. Reps to failure 
+      relationship shows wide individual variation at fixed %1RM; 70% 1RM produces 
+      6-26 reps depending on individual. Volume: Strength gains plateau around 4-5 
+      sets per muscle per week with diminishing returns beyond; lower volume optimal 
+      versus hypertrophy. Rest intervals: 3-5 minute rest preserves force output and 
+      allows higher quality sets for strength adaptations.
+    
+    recommendations:
+      - "Emphasize 85-95% 1RM range for primary strength development (1-5 reps)"
+      - "Strength gains less sensitive to proximity to failure than hypertrophy; 1-2 RIR sufficient"
+      - "Higher frequency (4-6 sessions per week) may benefit strength when volume distributed"
+      - "Technique quality paramount at high intensities; reduce volume if form degradation occurs"
+    
+    key_citations: "Meta-analyses on load intensity and strength adaptations 2023-2025"
+
+  
+  # Autoregulation and RPE-Based Training
+  autoregulation:
+    rpe_scale:
+      scale: "1-10"
+      rpe_10: "Absolute max"
+      rpe_9: "1 RIR"
+      rpe_8: "2 RIR"
+      rpe_7: "3 RIR"
+    
+    daily_adjustment: "Adjust load by 2.5-5% based on RPE rating versus target"
+    
+    target_rpe_by_context:
+      volume_work: "RPE 7-8"
+      top_sets: "RPE 8-9"
+      testing: "RPE 9-10"
+    
+    evidence_summary: |
+      2025 network meta-analysis shows APRE, VBRT, and RPE significantly more 
+      effective than percentage-based training for strength. APRE ranking: 
+      Autoregulatory Progressive Resistance Exercise ranked highest (SUCRA 93-97%) 
+      for back squat and bench press 1RM improvements. RPE validation: Studies show 
+      RPE-guided training produces equal or superior strength gains versus fixed 
+      %1RM prescriptions over 8-12 weeks. Individual variation: Fixed percentages 
+      fail to account for daily readiness; RPE accommodates fluctuations in sleep, 
+      stress, and recovery.
+    
+    recommendations:
+      - "Use RPE as primary intensity regulator for intermediate to advanced lifters"
+      - "Teach RPE scale explicitly; practice estimating RIR during warmups"
+      - "Combine with velocity-based training when possible for objective feedback"
+      - "Autoregulation prevents underreaching and overreaching by matching effort to daily capacity"
+    
+    key_citations: "Network meta-analysis on autoregulation methods 2025; RPE validation studies 2023-2025"
+
+  
+  # Periodization Models
+  periodization:
+    linear_periodization:
+      description: "4-6 week blocks progressing from higher volume/lower intensity to lower volume/higher intensity"
+      suitable_for: "Novices and preparatory phases (12-16 weeks out from competition)"
+    
+    daily_undulating:
+      description: "Vary intensity and volume daily within same week (e.g., heavy, light, medium across sessions)"
+      example: "Day 1: Heavy 3x3, Day 2: Light 4x8, Day 3: Medium 5x5"
+      suitable_for: "Intermediate to advanced lifters training 3-5 times per week per lift"
+    
+    weekly_undulating:
+      description: "Rotate focus weekly"
+      example: "Week 1: 5x5 @80%, Week 2: 3x3 @87%, Week 3: 6x2 @90%"
+      suitable_for: "Lower frequency programs or during in-season maintenance"
+    
+    deload_protocol:
+      frequency: "Every 3-4 weeks regardless of periodization model"
+      protocol: "Reduce volume 40-50%, maintain intensity"
+    
+    evidence_summary: |
+      Meta-analyses show similar strength outcomes between linear and undulating 
+      periodization when volume equated. Undulating slight edge: Some evidence 
+      suggests undulating periodization may provide small advantage for trained 
+      lifters. Program adherence: Undulating models may reduce monotony and improve 
+      adherence versus extended linear progressions. Detraining prevention: Frequent 
+      stimulus variation in undulating models may prevent detraining effects seen 
+      in long linear phases.
+    
+    recommendations:
+      - "Linear periodization effective for novices and preparatory phases"
+      - "Daily undulating suits intermediate to advanced lifters with higher frequency"
+      - "Weekly undulating practical for lower frequency programs"
+      - "Include deload weeks every 3-4 weeks regardless of model"
+    
+    key_citations: "Periodization meta-analyses comparing linear vs undulating models 2023-2025"
+
+  
+  # Accessory Work and Weak Point Training
+  accessory_lifts:
+    exercise_category: "Accessory Lifts"
+    purpose: "Support main lifts, address sticking points, injury prevention"
+    
+    parameters:
+      sets: "3-4 per exercise"
+      reps: "6-10 (or 4-8 for heavy accessories)"
+      weight_1rm_percent: "70-80% 1RM"
+      intensity_rpe: "7-8"
+      intensity_rir: "2-3 RIR"
+      rest_seconds: "120-180"  # 2-3 minutes
+      weekly_volume_sets: "3-6 per movement pattern"
+    
+    exercise_selection_principles:
+      specificity: "Accessories should closely mimic main lift mechanics"
+      examples:
+        - "Paused squats"
+        - "Close-grip bench press"
+        - "Deficit deadlifts"
+      weak_point_targeting: "Select accessories targeting weak points (e.g., lockout, bottom position, specific joint angles)"
+    
+    evidence_summary: |
+      Accessory volume: Lower volume needed versus main lifts; 3-6 sets per week 
+      per movement pattern sufficient. Moderate intensity: 70-80% loads allow higher 
+      quality reps for technique reinforcement and targeted hypertrophy. Specificity: 
+      Accessories should closely mimic main lift mechanics for transfer.
+    
+    recommendations:
+      - "Use accessories to accumulate volume without excessive fatigue"
+      - "Rotate accessories every 3-4 weeks for varied stimulus while maintaining specificity"
+      - "Pair agonist-antagonist movements (e.g., row after bench press) for efficiency and joint balance"
+      - "Target weak points in main lifts systematically"
+    
+    key_citations: "Accessory exercise transfer and specificity studies 2023-2025"
+
+  
+  # 1RM Percentage Guidelines by Rep Range
+  percentage_guidelines:
+    1_rep:
+      percent_1rm: "95-100%"
+    
+    2_3_reps:
+      percent_1rm: "90-95%"
+    
+    4_6_reps_strength:
+      percent_1rm: "85-90%"
+      focus: "Strength"
+    
+    4_6_reps_hybrid:
+      percent_1rm: "80-85%"
+      focus: "Strength-Hypertrophy"
+    
+    6_10_reps:
+      percent_1rm: "75-85%"
+    
+    evidence_summary: |
+      Individual variation: 2023 study shows maximal reps at fixed %1RM varies widely; 
+      70% 1RM produces 6-26 reps across individuals. Load recommendations: Systematic 
+      review confirms loads >80% 1RM optimize strength adaptations in trained lifters. 
+      Practical application: Use percentage ranges as starting points; adjust based on 
+      individual response and autoregulation feedback.
+    
+    recommendations:
+      - "Percentages are guidelines, not absolute prescriptions; individual variation requires adjustment"
+      - "Use RPE or RIR in conjunction with percentages for more accurate intensity regulation"
+      - "Test 1RM or estimate via validated prediction equations every 4-6 weeks to recalibrate percentages"
+    
+    key_citations: "Individual variation in strength-rep relationships 2023; load intensity systematic reviews 2023-2025"
+
+
+# Metadata
+metadata:
+  goal: "Maximal Strength"
+  content_type: "Prescriptions"
+  parameters_covered:
+    - sets
+    - reps
+    - intensity
+    - rest
+    - volume
+    - frequency
+    - autoregulation
+    - periodization
+    - accessory_work
+  evidence_level: "High"
+  evidence_period: "2023-2025"
+  source_file: "KB/prescriptions/strength_prescriptions.pdf"
+  converted_date: "2025-12-18"
+  application: "Workout generator parameter selection for maximal strength development"
