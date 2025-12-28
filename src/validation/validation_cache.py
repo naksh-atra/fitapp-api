@@ -3,6 +3,7 @@ import json
 import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
+from typing import Dict, Optional
 
 class ValidationCache:
     def __init__(self, cache_dir: str = "data/validation_cache"):
