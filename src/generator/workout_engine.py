@@ -8,6 +8,9 @@ import random
 from typing import Dict, List, Any
 from pathlib import Path
 
+from .exercise_selector import ExerciseSelector
+
+
 class WorkoutGenerator:
     def __init__(self, config_dir: str = "config/prescriptions"):
         self.config_dir = Path(config_dir)

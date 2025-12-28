@@ -16,6 +16,7 @@ dist/
 env/
 venv/
 fitenv/
+fenv/
 
 # Unit test / coverage reports
 .pytest_cache/
