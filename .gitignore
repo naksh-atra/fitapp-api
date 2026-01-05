@@ -39,6 +39,7 @@ project_structure.txt
 # Data files
 # Ignore all files inside data/
 data/**
+test.py
 
 # But keep folder structure
 !data/
