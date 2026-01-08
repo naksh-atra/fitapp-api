@@ -40,6 +40,7 @@ project_structure.txt
 # Ignore all files inside data/
 data/**
 test.py
+data/validation_cache/*.json
 
 # But keep folder structure
 !data/
