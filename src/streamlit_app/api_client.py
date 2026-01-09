@@ -82,3 +82,8 @@ class FitAppAPI:
         )
         response.raise_for_status()
         return response.json()
+
+
+
+#streamlit run src/streamlit_app/app.py --server.port 8501
+#python src/api/main.py

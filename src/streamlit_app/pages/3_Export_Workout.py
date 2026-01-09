@@ -5,6 +5,9 @@ Page 3: Export Workout
 import streamlit as st
 import json
 from datetime import datetime
+import sys
+sys.path.append('..')
+from pdf_generator import FitAppPDFGenerator
 
 st.title("3️⃣ Export Workout")
 
@@ -33,9 +36,21 @@ if 'modification_history' in workout and workout['modification_history']:
     
     for i, mod in enumerate(workout['modification_history'], 1):
         with st.expander(f"Modification {i}: {mod['original_exercise']} → {mod['replacement_exercise']}"):
-            st.markdown(f"**Verdict:** {mod['verdict'].upper()}")
-            st.markdown(f"**Timestamp:** {mod['timestamp']}")
+            # st.markdown(f"**Verdict:** {mod['verdict'].upper()}")
+            # st.markdown(f"**Timestamp:** {mod['timestamp']}")
+            # st.markdown(f"**Reasoning:** {mod['reasoning']}")
+             # Verdict color
+            if mod['verdict'].lower() == 'green':
+                st.success(f"✅ **VERDICT:** {mod['verdict'].upper()}")
+            elif mod['verdict'].lower() == 'yellow':
+                st.warning(f"⚠️ **VERDICT:** {mod['verdict'].upper()}")
+            else:
+                st.error(f"❌ **VERDICT:** {mod['verdict'].upper()}")
+            
             st.markdown(f"**Reasoning:** {mod['reasoning']}")
+            
+            if mod.get('warning'):
+                st.warning(mod['warning'])
             
             st.markdown("**Citations:**")
             for citation in mod['citations']:
@@ -67,8 +82,27 @@ with col2:
     st.markdown("### PDF Format")
     st.caption("Human-readable workout plan")
     
-    st.info("📄 PDF export coming soon")
+    # st.info("📄 PDF export coming soon")
     # TODO: Implement PDF generation
+    try:
+        pdf_gen = FitAppPDFGenerator()
+        pdf_data = pdf_gen.generate(workout)
+        
+        workout_id = workout['workout_id']
+        filename = f"FitApp_Workout_{workout_id}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        
+        st.download_button(
+            label="📥 Download PDF",
+            data=pdf_data,
+            file_name=filename,
+            mime="application/pdf",
+            use_container_width=True,
+            key="pdf_download"
+        )
+        
+    except Exception as e:
+        st.error(f"❌ PDF generation failed: {str(e)}")
+        st.info("Try JSON export instead")
 
 # Preview
 st.markdown("---")
