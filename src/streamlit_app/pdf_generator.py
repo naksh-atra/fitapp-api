@@ -266,11 +266,11 @@ class FitAppPDFGenerator:
             
             # Verdict color
             if verdict == 'GREEN':
-                verdict_color = f'<font color="{self.color_success.hexValue()}"><b>{verdict}</b></font>'
+                verdict_color = f'<font color="#218054"><b>{verdict}</b></font>'
             elif verdict == 'YELLOW':
-                verdict_color = f'<font color="{self.color_warning.hexValue()}"><b>{verdict}</b></font>'
+                verdict_color = f'<font color="#a84b2f"><b>{verdict}</b></font>'
             else:
-                verdict_color = f'<font color="{self.color_danger.hexValue()}"><b>{verdict}</b></font>'
+                verdict_color = f'<font color="#c01550"><b>{verdict}</b></font>'
             
             orig = mod['original_exercise'].upper()
             repl = mod['replacement_exercise'].upper()
