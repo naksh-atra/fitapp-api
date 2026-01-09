@@ -11,6 +11,10 @@ import sys
 import os
 from pathlib import Path
 from datetime import datetime
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from generator.workout_modifier import WorkoutModifier
+
+modifier = WorkoutModifier()
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env.local")
@@ -70,10 +74,22 @@ class ModificationRequest(BaseModel):
     goal: Optional[str] = "hypertrophy"
 
 
+# class ApplyModificationRequest(BaseModel):
+#     workout_id: str
+#     modification_id: str  # From validation response
+#     accept: bool = True  # Whether to proceed with modification
+
 class ApplyModificationRequest(BaseModel):
     workout_id: str
-    modification_id: str  # From validation response
-    accept: bool = True  # Whether to proceed with modification
+    modification_id: str
+    # Add these fields for MVP (we'll improve this later)
+    original_exercise: str
+    replacement_exercise: str
+    verdict: str
+    reasoning: str
+    citations: list
+    adjustments: Optional[Dict] = None
+
 
 
 @app.get("/")
@@ -229,23 +245,68 @@ async def apply_modification(request: ApplyModificationRequest):
     """
     if request.workout_id not in workout_sessions:
         raise HTTPException(status_code=404, detail=f"Workout ID '{request.workout_id}' not found")
+
+
+    original_workout = workout_sessions[request.workout_id]
+     # Retrieve validation result from cache
+    # For now, we'll accept the modification_id contains the validation data
+    # In production, you'd look this up from a proper store
     
-    if not request.accept:
+    # TODO: Retrieve actual validation result
+    # For MVP, we'll accept parameters directly in request
+    # You'll need to add these to ApplyModificationRequest model:
+    # - original_exercise, replacement_exercise, verdict, reasoning, citations
+    
+    try:
+        # Apply modification
+        modified_workout = modifier.apply_modification(
+            original_workout=original_workout,
+            original_exercise=request.original_exercise,  # Add to model
+            replacement_exercise=request.replacement_exercise,  # Add to model
+            verdict=request.verdict,  # Add to model
+            reasoning=request.reasoning,  # Add to model
+            citations=request.citations,  # Add to model
+            adjustments=request.adjustments  # Add to model (optional)
+        )
+        
+        # Store new workout
+        new_workout_id = modified_workout['workout_id']
+        workout_sessions[new_workout_id] = modified_workout
+        
         return {
-            "success": False,
-            "message": "Modification cancelled by user",
-            "workout": workout_sessions[request.workout_id]
+            "success": True,
+            "original_workout_id": request.workout_id,
+            "new_workout_id": new_workout_id,
+            "modified_workout": modified_workout,
+            "modification_summary": {
+                "exercise_changed": f"{request.original_exercise} → {request.replacement_exercise}",
+                "verdict": request.verdict,
+                "total_modifications": len(modified_workout.get('modification_history', []))
+            }
         }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Modification failed: {str(e)}")
+
+
+    # if not request.accept:
+    #     return {
+    #         "success": False,
+    #         "message": "Modification cancelled by user",
+    #         "workout": workout_sessions[request.workout_id]
+    #     }
     
-    # TODO: Implement workout modification logic
-    # For now, return placeholder
-    return {
-        "success": True,
-        "message": "⚠️  Modification application not yet implemented. Next sprint.",
-        "workout_id": request.workout_id,
-        "modification_id": request.modification_id,
-        "status": "pending_implementation"
-    }
+    # # TODO: Implement workout modification logic
+    # # For now, return placeholder
+    # return {
+    #     "success": True,
+    #     "message": "⚠️  Modification application not yet implemented. Next sprint.",
+    #     "workout_id": request.workout_id,
+    #     "modification_id": request.modification_id,
+    #     "status": "pending_implementation"
+    # }
 
 
 # NEW: Helper function
