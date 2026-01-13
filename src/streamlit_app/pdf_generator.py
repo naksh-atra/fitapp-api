@@ -110,8 +110,57 @@ class FitAppPDFGenerator:
             Paragraph(f"Generated: {date_str}", subtitle_style),
         ]
     
+    # def _build_metadata(self, workout):
+    #     """Goal and basic info"""
+    #     styles = getSampleStyleSheet()
+        
+    #     heading_style = ParagraphStyle(
+    #         'SectionHead',
+    #         parent=styles['Heading2'],
+    #         fontSize=11,
+    #         textColor=self.color_primary,
+    #         spaceAfter=8,
+    #         fontName='Helvetica-Bold'
+    #     )
+        
+    #     info_style = ParagraphStyle(
+    #         'Info',
+    #         parent=styles['Normal'],
+    #         fontSize=10,
+    #         textColor=self.color_text,
+    #         spaceAfter=4
+    #     )
+        
+    #     goal = workout['goal'].upper()
+    #     num_exercises = len(workout['exercises'])
+    #     duration = workout.get('total_duration_minutes', 60)
+    #     evidence = workout.get('evidence_level', 'HIGH')
+        
+    #     data = [
+    #         ['GOAL', 'EXERCISES', 'DURATION', 'EVIDENCE'],
+    #         [goal, str(num_exercises), f'{duration} min', evidence]
+    #     ]
+        
+    #     table = Table(data, colWidths=[1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+    #     table.setStyle(TableStyle([
+    #         ('BACKGROUND', (0, 0), (-1, 0), self.color_primary),
+    #         ('TEXTCOLOR', (0, 0), (-1, 0), self.color_light),
+    #         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    #         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+    #         ('FONTSIZE', (0, 0), (-1, 0), 10),
+    #         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+    #         ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+    #         ('TEXTCOLOR', (0, 1), (-1, -1), self.color_text),
+    #         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+    #         ('FONTSIZE', (0, 1), (-1, -1), 10),
+    #         ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+    #         ('GRID', (0, 0), (-1, -1), 0.5, self.color_border),
+    #         ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.white]),
+    #     ]))
+        
+    #     return [table]
     def _build_metadata(self, workout):
-        """Goal and basic info"""
+        """Goal and basic info with research validation"""
         styles = getSampleStyleSheet()
         
         heading_style = ParagraphStyle(
@@ -121,14 +170,6 @@ class FitAppPDFGenerator:
             textColor=self.color_primary,
             spaceAfter=8,
             fontName='Helvetica-Bold'
-        )
-        
-        info_style = ParagraphStyle(
-            'Info',
-            parent=styles['Normal'],
-            fontSize=10,
-            textColor=self.color_text,
-            spaceAfter=4
         )
         
         goal = workout['goal'].upper()
@@ -144,7 +185,7 @@ class FitAppPDFGenerator:
         table = Table(data, colWidths=[1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), self.color_primary),
-            ('TEXTCOLOR', (0, 0), (-1, 0), self.color_light),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 10),
@@ -155,10 +196,37 @@ class FitAppPDFGenerator:
             ('FONTSIZE', (0, 1), (-1, -1), 10),
             ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
             ('GRID', (0, 0), (-1, -1), 0.5, self.color_border),
-            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.white]),
         ]))
         
-        return [table]
+        story = [table]
+        
+        # Add research validation summary if available
+        if 'research_validation' in workout:
+            validation = workout['research_validation']
+            
+            summary_style = ParagraphStyle(
+                'Summary',
+                parent=styles['Normal'],
+                fontSize=9,
+                textColor=self.color_text,
+                spaceAfter=4,
+                leftIndent=0.1*inch,
+                rightIndent=0.1*inch,
+                alignment=TA_JUSTIFY
+            )
+            
+            story.append(Spacer(1, 0.15*inch))
+            story.append(Paragraph("<b>Research Validation:</b>", heading_style))
+            
+            # Truncate evidence summary for PDF (first 500 chars)
+            evidence_text = validation['evidence_summary'][:500]
+            if len(validation['evidence_summary']) > 500:
+                evidence_text += "... (see full citations below)"
+            
+            story.append(Paragraph(evidence_text, summary_style))
+        
+        return story
+
     
     def _build_exercises(self, workout):
         """Exercise details"""
@@ -298,6 +366,54 @@ class FitAppPDFGenerator:
         
         return story
     
+    # def _build_citations(self, workout):
+    #     """Citations and references"""
+    #     styles = getSampleStyleSheet()
+        
+    #     heading_style = ParagraphStyle(
+    #         'SectionHead',
+    #         parent=styles['Heading2'],
+    #         fontSize=12,
+    #         textColor=self.color_primary,
+    #         spaceAfter=12,
+    #         fontName='Helvetica-Bold'
+    #     )
+        
+    #     citation_style = ParagraphStyle(
+    #         'Citation',
+    #         parent=styles['Normal'],
+    #         fontSize=9,
+    #         textColor=self.color_text,
+    #         spaceAfter=8,
+    #         leftIndent=0.2*inch,
+    #         rightIndent=0.2*inch,
+    #         alignment=TA_JUSTIFY
+    #     )
+        
+    #     story = [Paragraph("RESEARCH CITATIONS & REFERENCES", heading_style)]
+        
+    #     # Collect all citations
+    #     all_citations = set()
+        
+    #     # From exercises
+    #     for ex in workout['exercises']:
+    #         if 'citations' in ex:
+    #             all_citations.update(ex['citations'])
+        
+    #     # From modifications
+    #     if 'modification_history' in workout:
+    #         for mod in workout['modification_history']:
+    #             if 'citations' in mod:
+    #                 all_citations.update(mod['citations'])
+        
+    #     # Display citations
+    #     for i, citation in enumerate(sorted(all_citations), 1):
+    #         story.append(Paragraph(
+    #             f"[{i}] {citation}",
+    #             citation_style
+    #         ))
+        
+    #     return story
     def _build_citations(self, workout):
         """Citations and references"""
         styles = getSampleStyleSheet()
@@ -325,27 +441,46 @@ class FitAppPDFGenerator:
         story = [Paragraph("RESEARCH CITATIONS & REFERENCES", heading_style)]
         
         # Collect all citations
-        all_citations = set()
+        all_citations = []
+        
+        # From prescription validation (MOST IMPORTANT - show first)
+        if 'research_validation' in workout:
+            all_citations.extend(workout['research_validation']['citations'])
         
         # From exercises
         for ex in workout['exercises']:
             if 'citations' in ex:
-                all_citations.update(ex['citations'])
+                all_citations.extend(ex['citations'])
         
         # From modifications
         if 'modification_history' in workout:
             for mod in workout['modification_history']:
                 if 'citations' in mod:
-                    all_citations.update(mod['citations'])
+                    all_citations.extend(mod['citations'])
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_citations = []
+        for citation in all_citations:
+            if citation not in seen:
+                seen.add(citation)
+                unique_citations.append(citation)
         
         # Display citations
-        for i, citation in enumerate(sorted(all_citations), 1):
+        for i, citation in enumerate(unique_citations, 1):
             story.append(Paragraph(
                 f"[{i}] {citation}",
                 citation_style
             ))
         
+        if not unique_citations:
+            story.append(Paragraph(
+                "No citations available for this workout.",
+                citation_style
+            ))
+        
         return story
+
     
     def _build_footer(self, workout):
         """Footer with metadata"""

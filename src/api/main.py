@@ -11,33 +11,33 @@ import sys
 import os
 from pathlib import Path
 from datetime import datetime
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from generator.workout_modifier import WorkoutModifier
-
-modifier = WorkoutModifier()
-
 from dotenv import load_dotenv
-load_dotenv(dotenv_path=".env.local")
 
-# Add parent directory to path for generator import
+# modifier = WorkoutModifier()
+
+load_dotenv(dotenv_path=".env.local")
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
+    from generator.workout_modifier import WorkoutModifier
     from generator.workout_engine import WorkoutGenerator
     print("✓ WorkoutGenerator imported successfully")
+    print("✓ WorkoutModifier imported successfully")
 except ImportError as e:
-    print(f"❌ Import error: {e}")
-    print("Run: python src/generator/workout_engine.py first to test")
+    print(f"import error: {e}")
+    sys.exit(1)
 
 # NEW: Import validation components
 try:
     from validation.research_validator import ResearchValidator
     from validation.validation_cache import ValidationCache
+    from src.validation.prescription_validator import PrescriptionValidator
     print("✓ Validation system imported successfully")
 except ImportError as e:
-    print(f"⚠️  Validation system not yet implemented: {e}")
+    print(f"Validation system not yet implemented: {e}")
     ResearchValidator = None
     ValidationCache = None
+    PrescriptionValidator = None
 
 app = FastAPI(
     title="🎯 FitApp Workout Generator API",
@@ -49,6 +49,14 @@ app = FastAPI(
 
 # Initialize generator
 generator = WorkoutGenerator()
+
+# Initialize prescription validator
+try:
+    prescription_validator = PrescriptionValidator()
+    print("✓ Prescription validator initialized")
+except Exception as e:
+    print(f"⚠ Prescription validator failed: {e}")
+    prescription_validator = None
 
 # NEW: Initialize validation system (if available)
 validator = ResearchValidator() if ResearchValidator else None
@@ -125,6 +133,7 @@ async def root():
 async def generate_workout(request: WorkoutRequest):
     """Generate complete science-based workout from YAML prescriptions"""
     try:
+        # Step 1: Generate workout from prescription
         workout = generator.generate_workout(
             goal=request.goal.lower(),
             equipment=request.equipment.lower(),
@@ -132,27 +141,52 @@ async def generate_workout(request: WorkoutRequest):
             week=request.week
         )
         
-        # NEW: Generate workout ID and store in session
+        # Step 2: Generate workout ID and store in session FIRST
         workout_id = f"workout_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         workout["workout_id"] = workout_id
+        
+        # Step 3: Validate with research (adds citations)
+        if prescription_validator:
+            validation_result = prescription_validator.validate_prescription(
+                goal=request.goal,
+                exercises=workout['exercises'],
+                equipment=request.equipment,
+                experience=request.experience
+            )
+            
+            # Attach validation to workout
+            workout['research_validation'] = {
+                "validated": validation_result['validated'],
+                "evidence_level": validation_result['confidence'].upper(),
+                "evidence_summary": validation_result['evidence_summary'],
+                "citations": validation_result['citations'],
+                "validated_at": validation_result['validated_at']
+            }
+            
+            # Also attach to top level for easy access
+            workout['evidence_level'] = validation_result['confidence'].upper()
+            workout['citations'] = validation_result['citations']
+            workout['prescription_source'] = f"Research-validated {request.goal} protocol (2023-2025)"
+        
+        # Step 4: Store workout in session (CRITICAL for modifications)
         workout_sessions[workout_id] = workout
         
+        # Step 5: Return response
         return {
-            "success": True,
-            "workout_id": workout_id,  # NEW: Return for modification tracking
+            "status": "success",
+            "message": f"Research-validated {request.goal} workout generated",
+            "workout_id": workout_id,  # Return ID for modification tracking
             "data": workout,
-            "prescription_evidence": workout.get("evidence_level", "High"),
-            "source_file": workout.get("prescription_source", "N/A"),
-            "exercise_count": len(workout["exercises"]),
-            "total_duration_minutes": workout["total_duration_minutes"],
-            "modification_enabled": validator is not None  # NEW: Tell frontend if modifications work
+            "modification_enabled": validator is not None
         }
+    
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
     except KeyError as e:
         raise HTTPException(status_code=404, detail=f"Goal '{request.goal}' not found. Available: {list(generator.prescriptions.keys())}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Generation error: {str(e)}")
+
 
 
 # NEW: Validation endpoint
