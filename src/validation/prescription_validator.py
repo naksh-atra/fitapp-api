@@ -180,7 +180,19 @@ Provide citations with full URLs.
         # Extract citations (URLs)
         import re
         url_pattern = r'https?://[^\s\)]+'
-        citations = list(set(re.findall(url_pattern, response)))
+        # citations = list(set(re.findall(url_pattern, response)))
+        all_urls = re.findall(url_pattern, response)
+    
+        # Filter out API endpoints and invalid URLs
+        citations = [
+            url for url in set(all_urls)
+            if not any(exclude in url for exclude in [
+                'api.perplexity.ai',
+                'localhost',
+                '127.0.0.1',
+                'example.com'
+            ])
+        ]
         
         # Determine confidence based on response
         confidence = "high"  # Default
@@ -193,7 +205,7 @@ Provide citations with full URLs.
             "validated": True,
             "goal": goal,
             "evidence_summary": response,
-            "citations": citations[:8],  # Limit to 8 citations
+            "citations": citations[:8] if citations else ['No direct citations available - see evidence summary'],  # Limit to 8 citations
             "confidence": confidence,
             "validated_at": datetime.now().isoformat(),
             "source": "perplexity_api"

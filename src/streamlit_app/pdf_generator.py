@@ -273,7 +273,7 @@ class FitAppPDFGenerator:
             ex_type = exercise['type'].title()
             sets = self._format_range(exercise['sets'])
             reps = self._format_range(exercise['reps'])
-            tempo = exercise['tempo']
+            tempo = exercise.get('tempo','N/A')
             rest = self._format_range(exercise['rest_seconds'])
             
             details = f"<b>Type:</b> {ex_type} | <b>Sets:</b> {sets} | <b>Reps:</b> {reps} | <b>Tempo:</b> {tempo}"

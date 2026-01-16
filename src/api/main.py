@@ -31,7 +31,7 @@ except ImportError as e:
 try:
     from validation.research_validator import ResearchValidator
     from validation.validation_cache import ValidationCache
-    from src.validation.prescription_validator import PrescriptionValidator
+    from validation.prescription_validator import PrescriptionValidator
     print("✓ Validation system imported successfully")
 except ImportError as e:
     print(f"Validation system not yet implemented: {e}")

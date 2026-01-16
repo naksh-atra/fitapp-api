@@ -122,7 +122,7 @@ if st.session_state.current_workout:
             
             col1.markdown(f"**Sets:** {sets_str}")
             col2.markdown(f"**Reps:** {reps_str}")
-            col3.markdown(f"**Tempo:** {ex['tempo']}")
+            col3.markdown(f"**Tempo:** {ex.get('tempo','N/A')}")
             col4.markdown(f"**Rest:** {rest_str}")
             
             if 'rpe' in ex:
