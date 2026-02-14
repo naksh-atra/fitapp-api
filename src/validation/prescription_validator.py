@@ -8,11 +8,13 @@ import requests
 from typing import Dict, List
 import json
 from datetime import datetime
-
+#extract urls
+import re
 
 class PrescriptionValidator:
     """Validate workout prescriptions against research"""
     
+    #constructor to read api key from env, set api endpoints, set cached data location, also loads existing cache
     def __init__(self, cache_path: str = "data/validation_cache/prescription_cache.json"):
         self.api_key = os.getenv("PERPLEXITY_API_KEY")
         self.api_url = "https://api.perplexity.ai/chat/completions"
@@ -38,13 +40,7 @@ class PrescriptionValidator:
         except Exception as e:
             print(f"Cache save error: {e}")
     
-    def validate_prescription(
-        self,
-        goal: str,
-        exercises: List[Dict],
-        equipment: str = "gym",
-        experience: str = "intermediate"
-    ) -> Dict:
+    def validate_prescription(self, goal: str, exercises: List[Dict], equipment: str = "gym", experience: str = "intermediate") -> Dict:
         """
         Validate an entire workout prescription
         Returns: {
@@ -56,7 +52,12 @@ class PrescriptionValidator:
         """
         
         # Create cache key
-        cache_key = f"{goal}_{equipment}_{experience}"
+        # cache_key = f"{goal}_{equipment}_{experience}"
+        # Make cache_key UNIQUE per workout
+        sample_exercises = [ex['name'] for ex in exercises[:3]]  # First 3 exercise names
+        cache_key = f"{goal}_{equipment}_{experience}_{hash('_'.join(sample_exercises))}"
+        
+        print(f"🔥 Cache key: {cache_key}")  # DEBUG
         
         # Check cache first
         if cache_key in self.cache:
@@ -139,7 +140,7 @@ Provide citations with full URLs.
             return "Error: PERPLEXITY_API_KEY not set"
         
         payload = {
-            "model": "llama-3.1-sonar-large-128k-online",
+            "model": "sonar-pro",
             "messages": [
                 {
                     "role": "system",
@@ -150,15 +151,22 @@ Provide citations with full URLs.
                     "content": query
                 }
             ],
-            "temperature": 0.2,
-            "max_tokens": 2000
+            "temperature": 0.1,
+            "max_tokens": 1000
         }
         
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-        
+        # DEBUG: Print everything Perplexity sees
+        print("🔍 DEBUG PAYLOAD:")
+        print(f"  Model: {payload['model']}")
+        print(f"  Messages count: {len(payload['messages'])}")
+        print(f"  Temperature: {payload['temperature']}")
+        print(f"  API Key prefix: {self.api_key[:8] if self.api_key else 'MISSING'}***")
+        print(f"  Full payload size: {len(json.dumps(payload))} chars")
+        print()
         try:
             response = requests.post(
                 self.api_url,
@@ -168,7 +176,18 @@ Provide citations with full URLs.
             )
             response.raise_for_status()
             result = response.json()
-            return result['choices'][0]['message']['content']
+            # return result['choices'][0]['message']['content']
+            #DEBUG: Print exactly what Perplexity returns
+            raw_content = result['choices'][0]['message']['content']
+    
+            print(f"\n🔍 RAW PERPLEXITY RESPONSE ({len(raw_content)} chars):")
+            print("-" * 80)
+            print(raw_content[:800])  # First 800 chars
+            print("-" * 80)
+            print("URLs found: " + str(re.findall(r'https?://[^\s\)]+', raw_content)))
+            print()
+            
+            return raw_content
         
         except Exception as e:
             print(f"Perplexity API error: {e}")
@@ -177,8 +196,7 @@ Provide citations with full URLs.
     def _parse_validation_response(self, response: str, goal: str) -> Dict:
         """Parse Perplexity response into structured format"""
         
-        # Extract citations (URLs)
-        import re
+    
         url_pattern = r'https?://[^\s\)]+'
         # citations = list(set(re.findall(url_pattern, response)))
         all_urls = re.findall(url_pattern, response)
@@ -186,11 +204,13 @@ Provide citations with full URLs.
         # Filter out API endpoints and invalid URLs
         citations = [
             url for url in set(all_urls)
-            if not any(exclude in url for exclude in [
+            if not any(exclude in url.lower() for exclude in [
                 'api.perplexity.ai',
                 'localhost',
                 '127.0.0.1',
-                'example.com'
+                'example.com',
+                'streamlit.io',
+                'ngrok.io',
             ])
         ]
         
