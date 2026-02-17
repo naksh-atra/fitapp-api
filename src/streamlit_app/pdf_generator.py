@@ -365,53 +365,6 @@ class FitAppPDFGenerator:
             story.append(Spacer(1, 0.15*inch))
         
         return story
-    
-    # def _build_citations(self, workout):
-    #     """Citations and references"""
-    #     styles = getSampleStyleSheet()
-        
-    #     heading_style = ParagraphStyle(
-    #         'SectionHead',
-    #         parent=styles['Heading2'],
-    #         fontSize=12,
-    #         textColor=self.color_primary,
-    #         spaceAfter=12,
-    #         fontName='Helvetica-Bold'
-    #     )
-        
-    #     citation_style = ParagraphStyle(
-    #         'Citation',
-    #         parent=styles['Normal'],
-    #         fontSize=9,
-    #         textColor=self.color_text,
-    #         spaceAfter=8,
-    #         leftIndent=0.2*inch,
-    #         rightIndent=0.2*inch,
-    #         alignment=TA_JUSTIFY
-    #     )
-        
-    #     story = [Paragraph("RESEARCH CITATIONS & REFERENCES", heading_style)]
-        
-    #     # Collect all citations
-    #     all_citations = set()
-        
-    #     # From exercises
-    #     for ex in workout['exercises']:
-    #         if 'citations' in ex:
-    #             all_citations.update(ex['citations'])
-        
-    #     # From modifications
-    #     if 'modification_history' in workout:
-    #         for mod in workout['modification_history']:
-    #             if 'citations' in mod:
-    #                 all_citations.update(mod['citations'])
-        
-    #     # Display citations
-    #     for i, citation in enumerate(sorted(all_citations), 1):
-    #         story.append(Paragraph(
-    #             f"[{i}] {citation}",
-    #             citation_style
-    #         ))
         
     #     return story
     def _build_citations(self, workout):
