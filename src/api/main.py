@@ -11,33 +11,31 @@ import sys
 import os
 from pathlib import Path
 from datetime import datetime
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from generator.workout_modifier import WorkoutModifier
-
-modifier = WorkoutModifier()
-
 from dotenv import load_dotenv
-load_dotenv(dotenv_path=".env.local")
 
-# Add parent directory to path for generator import
+
+
+load_dotenv(dotenv_path=".env.local")
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from generator.workout_engine import WorkoutGenerator
     print("✓ WorkoutGenerator imported successfully")
 except ImportError as e:
-    print(f"❌ Import error: {e}")
-    print("Run: python src/generator/workout_engine.py first to test")
+    print(f"import error: {e}")
+    sys.exit(1)
 
 # NEW: Import validation components
 try:
     from validation.research_validator import ResearchValidator
     from validation.validation_cache import ValidationCache
+    from validation.prescription_validator import PrescriptionValidator
     print("✓ Validation system imported successfully")
 except ImportError as e:
-    print(f"⚠️  Validation system not yet implemented: {e}")
+    print(f"Validation system not yet implemented: {e}")
     ResearchValidator = None
     ValidationCache = None
+    PrescriptionValidator = None
 
 app = FastAPI(
     title="🎯 FitApp Workout Generator API",
@@ -49,6 +47,24 @@ app = FastAPI(
 
 # Initialize generator
 generator = WorkoutGenerator()
+
+# Initialize WorkoutModifier safely
+try:
+    from generator.workout_modifier import WorkoutModifier
+    print("✓ WorkoutModifier imported successfully")
+    modifier = WorkoutModifier()
+    print("✓ WorkoutModifier initialized")
+except Exception as e:
+    print(f"⚠ WorkoutModifier disabled: {e}")
+    modifier = None
+
+# Initialize prescription validator
+try:
+    prescription_validator = PrescriptionValidator()
+    print("✓ Prescription validator initialized")
+except Exception as e:
+    print(f"⚠ Prescription validator failed: {e}")
+    prescription_validator = None
 
 # NEW: Initialize validation system (if available)
 validator = ResearchValidator() if ResearchValidator else None
@@ -102,6 +118,7 @@ async def root():
         "available_goals": list(generator.prescriptions.keys()),
         "features": {
             "workout_generation": "✅ Operational",
+            "workout_modification": "✅ Ready" if modifier else "⚠️ Manual only", 
             "modification_validation": "✅ Operational" if validator else "⚠️  Not configured",
             "research_citations": "✅ Included"
         },
@@ -125,6 +142,7 @@ async def root():
 async def generate_workout(request: WorkoutRequest):
     """Generate complete science-based workout from YAML prescriptions"""
     try:
+        # Step 1: Generate workout from prescription
         workout = generator.generate_workout(
             goal=request.goal.lower(),
             equipment=request.equipment.lower(),
@@ -132,27 +150,52 @@ async def generate_workout(request: WorkoutRequest):
             week=request.week
         )
         
-        # NEW: Generate workout ID and store in session
+        # Step 2: Generate workout ID and store in session FIRST
         workout_id = f"workout_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         workout["workout_id"] = workout_id
+        
+        # Step 3: Validate with research (adds citations)
+        if prescription_validator:
+            validation_result = prescription_validator.validate_prescription(
+                goal=request.goal,
+                exercises=workout['exercises'],
+                equipment=request.equipment,
+                experience=request.experience
+            )
+            
+            # Attach validation to workout
+            workout['research_validation'] = {
+                "validated": validation_result['validated'],
+                "evidence_level": validation_result['confidence'].upper(),
+                "evidence_summary": validation_result['evidence_summary'],
+                "citations": validation_result['citations'],
+                "validated_at": validation_result['validated_at']
+            }
+            
+            # Also attach to top level for easy access
+            workout['evidence_level'] = validation_result['confidence'].upper()
+            workout['citations'] = validation_result['citations']
+            workout['prescription_source'] = f"Research-validated {request.goal} protocol (2023-2025)"
+        
+        # Step 4: Store workout in session (CRITICAL for modifications)
         workout_sessions[workout_id] = workout
         
+        # Step 5: Return response
         return {
-            "success": True,
-            "workout_id": workout_id,  # NEW: Return for modification tracking
+            "status": "success",
+            "message": f"Research-validated {request.goal} workout generated",
+            "workout_id": workout_id,  # Return ID for modification tracking
             "data": workout,
-            "prescription_evidence": workout.get("evidence_level", "High"),
-            "source_file": workout.get("prescription_source", "N/A"),
-            "exercise_count": len(workout["exercises"]),
-            "total_duration_minutes": workout["total_duration_minutes"],
-            "modification_enabled": validator is not None  # NEW: Tell frontend if modifications work
+            "modification_enabled": modifier is not None
         }
+    
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
     except KeyError as e:
         raise HTTPException(status_code=404, detail=f"Goal '{request.goal}' not found. Available: {list(generator.prescriptions.keys())}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Generation error: {str(e)}")
+
 
 
 # NEW: Validation endpoint
@@ -239,38 +282,52 @@ async def validate_modification(request: ModificationRequest):
 # NEW: Apply modification endpoint
 @app.post("/apply_modification")
 async def apply_modification(request: ApplyModificationRequest):
-    """
-    Apply validated modification to workout.
-    Only works if validation returned green or yellow and user accepts.
-    """
-    if request.workout_id not in workout_sessions:
-        raise HTTPException(status_code=404, detail=f"Workout ID '{request.workout_id}' not found")
-
-
-    original_workout = workout_sessions[request.workout_id]
-     # Retrieve validation result from cache
-    # For now, we'll accept the modification_id contains the validation data
-    # In production, you'd look this up from a proper store
+    """Apply validated modification to workout (green/yellow only)."""
     
-    # TODO: Retrieve actual validation result
-    # For MVP, we'll accept parameters directly in request
-    # You'll need to add these to ApplyModificationRequest model:
-    # - original_exercise, replacement_exercise, verdict, reasoning, citations
+    # Safety check - modifier must exist
+    if modifier is None:
+        raise HTTPException(
+            status_code=503, 
+            detail="Workout modification temporarily unavailable."
+        )
+
+    # Safety check - workout must exist
+    if request.workout_id not in workout_sessions:
+        raise HTTPException(status_code=404, detail=f"Workout '{request.workout_id}' not found")
+    
+    # Safety check - exercise must exist
+    original_workout = workout_sessions[request.workout_id]  # ✅ No .copy() needed
+    exercise_found = any(
+        ex['name'].lower() == request.original_exercise.lower() 
+        for ex in original_workout.get('exercises', [])
+    )
+    if not exercise_found:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Exercise '{request.original_exercise}' not in workout"
+        )
+
+    # Safety check - only green/yellow
+    if request.verdict.lower() not in ['green', 'yellow']:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot apply '{request.verdict}' verdict"
+        )
     
     try:
-        # Apply modification
+        # Apply modification (modifier deep-copies internally)
         modified_workout = modifier.apply_modification(
             original_workout=original_workout,
-            original_exercise=request.original_exercise,  # Add to model
-            replacement_exercise=request.replacement_exercise,  # Add to model
-            verdict=request.verdict,  # Add to model
-            reasoning=request.reasoning,  # Add to model
-            citations=request.citations,  # Add to model
-            adjustments=request.adjustments  # Add to model (optional)
+            original_exercise=request.original_exercise,
+            replacement_exercise=request.replacement_exercise,
+            verdict=request.verdict,
+            reasoning=request.reasoning,
+            citations=request.citations,
+            adjustments=request.adjustments
         )
         
-        # Store new workout
-        new_workout_id = modified_workout['workout_id']
+        # Store new workout (modifier sets workout_id)
+        new_workout_id = modified_workout['workout_id']  # ✅ Use modifier's ID
         workout_sessions[new_workout_id] = modified_workout
         
         return {
@@ -291,23 +348,6 @@ async def apply_modification(request: ApplyModificationRequest):
         raise HTTPException(status_code=500, detail=f"Modification failed: {str(e)}")
 
 
-    # if not request.accept:
-    #     return {
-    #         "success": False,
-    #         "message": "Modification cancelled by user",
-    #         "workout": workout_sessions[request.workout_id]
-    #     }
-    
-    # # TODO: Implement workout modification logic
-    # # For now, return placeholder
-    # return {
-    #     "success": True,
-    #     "message": "⚠️  Modification application not yet implemented. Next sprint.",
-    #     "workout_id": request.workout_id,
-    #     "modification_id": request.modification_id,
-    #     "status": "pending_implementation"
-    # }
-
 
 # NEW: Helper function
 def _get_verdict_emoji(verdict: str) -> str:
@@ -317,6 +357,7 @@ def _get_verdict_emoji(verdict: str) -> str:
         'yellow': '🟡',
         'red': '🔴'
     }.get(verdict.lower(), '⚪')
+
 
 
 @app.get("/test/{goal}")
@@ -338,6 +379,7 @@ async def test_goal(goal: str, equipment: Optional[str] = "gym", experience: Opt
         raise HTTPException(status_code=400, detail=str(e))
 
 
+
 @app.get("/health")
 async def health_check():
     """Health check for deployment monitoring"""
@@ -351,6 +393,7 @@ async def health_check():
         "cache_ready": cache is not None,
         "active_sessions": len(workout_sessions)
     }
+
 
 
 if __name__ == "__main__":
