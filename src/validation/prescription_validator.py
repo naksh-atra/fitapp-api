@@ -385,7 +385,7 @@ Provide citations with full URLs.
                 {"role": "user", "content": f"Goal: {goal}\nPrescription: {query}"}
             ],
             "temperature": 0.1,
-            "max_tokens": 700
+            "max_tokens": 1000
         }
     
         headers = {
