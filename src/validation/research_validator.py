@@ -29,7 +29,7 @@ class ResearchValidator:
                 "Content-Type": "application/json"
             },
             json={
-                "model": "sonar-pro",  # Use Pro model for research quality
+                "model": "sonar",
                 "messages": [
                     {
                         "role": "system",
