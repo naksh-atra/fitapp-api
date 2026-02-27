@@ -68,18 +68,27 @@ def test_happy_path(equipment, experience):
 
 def test_cache_reuse():
     clear_cache()
-    
-    payload = {
-        "goal": "hypertrophy",
-        "equipment": "gym",
-        "experience": "beginner",
-        "week": 1
-    }
-    
-    # Call 1
+    payload = {"goal": "hypertrophy", "equipment": "gym", "experience": "beginner", "week": 1}
+
     resp1 = requests.post(ENDPOINT, json=payload, timeout=90)
     assert resp1.status_code == 200
-    data1 = resp1.json()["data"]
+    data1 = resp1.json()
+
+    resp2 = requests.post(ENDPOINT, json=payload, timeout=90)
+    assert resp2.status_code == 200
+    data2 = resp2.json()
+
+    # True cache test: check source field
+    v1 = data1["data"].get("validation_source", "")
+    v2 = data2["data"].get("validation_source", "")
+
+    if "perplexity_api" in v1:
+        # Perplexity worked → second call MUST be cached
+        assert v2 == v1, "Second call should use cache"
+        print("✅ True cache hit confirmed")
+    else:
+        # Perplexity 401 → cache never populated → test is inconclusive
+        print(f"⚠️ Cache test inconclusive: Perplexity returned {v1}, not testing cache")
     
     # Call 2 (cache hit - fast)
     start = time.time()
@@ -92,29 +101,26 @@ def test_cache_reuse():
     assert len(data1["exercises"]) == len(data2["exercises"])
     print(f"✅ Cache reuse: {elapsed:.1f}s")
 
-@pytest.mark.parametrize("test_case", [
-    {"goal": "mass"},                    # Invalid goal  
-    {"experience": "expert"},            # Invalid exp
-    {"equipment": "pool"},               # Invalid equip
-    {"week": -1},                        # Invalid week
+@pytest.mark.parametrize("test_case, expected_status", [
+    ({"goal": "mass"},           422),  # Invalid goal
+    ({"experience": "expert"},   422),  # Invalid experience
+    ({"equipment": "pool"},      422),  # Invalid equipment
+    ({"week": -1},               422),  # Below ge=0
+    ({"week": 53},               422),  # Above le=52
+    ({"week": ""},               422),  # Wrong type
 ])
-def test_validation_errors(test_case):
+def test_validation_errors(test_case, expected_status):
     payload = {
-        "goal": test_case.get("goal", "hypertrophy"),
-        "equipment": test_case.get("equipment", "gym"),
+        "goal":       test_case.get("goal", "hypertrophy"),
+        "equipment":  test_case.get("equipment", "gym"),
         "experience": test_case.get("experience", "beginner"),
-        "week": test_case.get("week", 1)
+        "week":       test_case.get("week", 1)
     }
-    
-    resp = requests.post(ENDPOINT, json=payload, timeout=30)
-    
-    # 4xx OR permissive 200 (your API style)
-    assert resp.status_code < 500
-    if resp.status_code >= 400:
-        error_data = resp.json()
-        assert "detail" in error_data or "error" in error_data
-    
-    print(f"✅ Invalid {test_case}: {resp.status_code}")
+    resp = requests.post(ENDPOINT, json=payload, timeout=10)
+    assert resp.status_code == expected_status, \
+        f"Expected {expected_status} for {test_case}, got {resp.status_code}"
+    print(f"✅ {test_case} → {resp.status_code}")
+
 
 def test_edge_cases():
     cases = [

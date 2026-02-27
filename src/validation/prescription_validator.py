@@ -248,7 +248,30 @@ import re
 
 class PrescriptionValidator:
     """Validate workout prescriptions against research"""
-    
+
+    GOAL_CONTEXT = {
+        "strength": {
+            "focus": "maximal strength (1RM improvement)",
+            "key_variables": "load >80% 1RM, rest 3-5 min, low reps 1-6, compound-dominant",
+            "citation_focus": "strength-specific meta-analyses, powerlifting RCTs, 1RM studies 2023-2025"
+        },
+        "endurance": {
+            "focus": "muscular endurance and aerobic capacity",
+            "key_variables": "high reps 15-30, short rest 20-60s, load <60% 1RM, circuit density",
+            "citation_focus": "endurance-RT interaction, ACSM guidelines, circuit training meta-analyses 2023-2025"
+        },
+        "fatloss": {
+            "focus": "fat mass reduction while preserving lean mass",
+            "key_variables": "metabolic stress, HIIT-RT combination, moderate load moderate rep, short rest",
+            "citation_focus": "body composition RCTs, HIIT+RT combination studies 2023-2025"
+        },
+        "hypertrophy": {
+            "focus": "muscle hypertrophy",
+            "key_variables": "volume 10-20 sets/muscle/week, reps 6-20, proximity to failure",
+            "citation_focus": "hypertrophy meta-analyses, volume-response studies 2023-2025"
+        }
+    }
+
     #constructor to read api key from env, set api endpoints, set cached data location, also loads existing cache
     def __init__(self, cache_path: str = "data/validation_cache/prescription_cache.json"):
         self.api_key = os.getenv("PERPLEXITY_API_KEY")
@@ -290,9 +313,11 @@ class PrescriptionValidator:
         }
         """
         
-        # Create cache key
-        sample_exercises = [ex['name'] for ex in exercises[:3]]  # First 3 exercise names
-        cache_key = f"{goal}_{equipment}_{experience}_{hash('_'.join(sample_exercises))}"
+        # Cache key: goal + equipment + experience only.
+        # Do NOT include exercise names — the validator checks the prescription
+        # approach, not the specific exercises, and exercise names change when
+        # generators are updated (which would bust the cache unnecessarily).
+        cache_key = f"{goal}_{equipment}_{experience}"
         
         print(f"🔥 Cache key: {cache_key}")  # DEBUG
         
@@ -327,48 +352,47 @@ class PrescriptionValidator:
         equipment: str,
         experience: str
     ) -> str:
-        """Build research query for prescription validation"""
-        
+        """Build goal-aware research query for prescription validation"""
+
+        ctx = self.GOAL_CONTEXT.get(goal, self.GOAL_CONTEXT["hypertrophy"])
+
         # Summarize exercises
         exercise_summary = []
         for ex in exercises[:6]:  # First 6 exercises
             name = ex['name']
-            sets = ex['sets']
-            reps = ex['reps']
-            
+            sets = ex.get('sets', '?')
+            reps = ex.get('reps', '?')
+
             if isinstance(sets, list):
                 sets_str = f"{sets[0]}-{sets[1]}"
             else:
                 sets_str = str(sets)
-            
+
             if isinstance(reps, list):
                 reps_str = f"{reps[0]}-{reps[1]}"
             else:
                 reps_str = str(reps)
-            
-            exercise_summary.append(f"{name} ({sets_str} sets, {reps_str} reps)")
-        
-        exercises_text = "\n- ".join(exercise_summary)
-        
-        query = f"""
-I need to validate a {goal} workout prescription for {experience} trainees using {equipment} equipment.
 
-The prescription includes:
+            exercise_summary.append(f"{name} ({sets_str} sets, {reps_str} reps)")
+
+        exercises_text = "\n- ".join(exercise_summary)
+
+        query = f"""
+Validate a {goal} workout for {experience} trainees using {equipment}.
+
+Goal focus: {ctx['focus']}
+Key variables to validate: {ctx['key_variables']}
+
+Prescription:
 - {exercises_text}
 
-Based on recent research (2023-2025), please:
+Validate against 2023-2025 research:
+1. Does this align with {goal} evidence?
+2. Are sets/reps/rest optimal for {ctx['focus']}?
+3. Is exercise selection appropriate?
+4. Provide 3-5 citations from: {ctx['citation_focus']}
 
-1. Confirm if this prescription aligns with current evidence for {goal}
-2. Validate the set/rep ranges for {goal} training
-3. Assess if exercise selection is optimal for {goal}
-4. Provide 3-5 key research citations supporting this approach
-
-Focus on:
-- Recent meta-analyses or systematic reviews (2023-2025)
-- Studies on {goal} training protocols
-- Evidence on volume, intensity, and exercise selection
-
-Provide citations with full URLs.
+Include full citation URLs.
 """
         return query.strip()
     
@@ -407,7 +431,7 @@ Provide citations with full URLs.
                 self.api_url,
                 json=payload,
                 headers=headers,
-                timeout=30
+                timeout=25   # 25s so we fail before the client's 30s budget
             )
             
             print(f"RAW PERPLEXITY RESPONSE ({response.status_code}): {response.text[:200]}...")
