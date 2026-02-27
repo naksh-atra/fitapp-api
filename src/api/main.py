@@ -4,7 +4,7 @@ Science-based workouts powered by YAML research prescriptions
 """
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 import uvicorn
 import sys
@@ -12,10 +12,16 @@ import os
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
+from enum import Enum
 
 
 
-load_dotenv(dotenv_path=".env.local")
+
+load_dotenv(
+    dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env.local",
+    override=True   # Always win over stale Windows system/user env vars
+)
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
@@ -73,27 +79,36 @@ cache = ValidationCache() if ValidationCache else None
 # NEW: In-memory session storage (replace with Redis/DB for production)
 workout_sessions = {}
 
+# --- Enums (single source of truth) ---
+class Goal(str, Enum):
+    hypertrophy = "hypertrophy"
+    strength    = "strength"
+    endurance   = "endurance"
+    fatloss     = "fatloss"
+
+class Equipment(str, Enum):
+    gym  = "gym"
+    home = "home"
+
+class Experience(str, Enum):
+    beginner     = "beginner"
+    intermediate = "intermediate"
+    advanced     = "advanced"
 
 class WorkoutRequest(BaseModel):
-    goal: str  # Required: hypertrophy, strength, endurance, fatloss
-    equipment: Optional[str] = "gym"  # gym, home
-    experience: Optional[str] = "intermediate"  # beginner, intermediate, advanced
-    week: Optional[int] = 1
+    goal: Goal  # Required: hypertrophy, strength, endurance, fatloss
+    equipment: Equipment = Equipment.gym  # gym, home
+    experience: Experience = Experience.intermediate  # beginner, intermediate, advanced
+    week: Optional[int] = Field(default=1, ge=1, le=52)
 
 
-# NEW: Validation request models
 class ModificationRequest(BaseModel):
     workout_id: str  # From original generation
     original_exercise: str
     replacement_exercise: str
     reason: str  # e.g., "knee_pain", "no_equipment", "preference"
-    goal: Optional[str] = "hypertrophy"
+    goal: Goal = Goal.hypertrophy
 
-
-# class ApplyModificationRequest(BaseModel):
-#     workout_id: str
-#     modification_id: str  # From validation response
-#     accept: bool = True  # Whether to proceed with modification
 
 class ApplyModificationRequest(BaseModel):
     workout_id: str
@@ -106,6 +121,13 @@ class ApplyModificationRequest(BaseModel):
     citations: list
     adjustments: Optional[Dict] = None
 
+
+class ValidateSwapRequest(BaseModel):
+    """Standalone swap validation — no workout session required"""
+    original_exercise: str
+    replacement_exercise: str
+    reason: str
+    goal: Goal = Goal.hypertrophy
 
 
 @app.get("/")
@@ -359,6 +381,35 @@ def _get_verdict_emoji(verdict: str) -> str:
     }.get(verdict.lower(), '⚪')
 
 
+@app.post("/validate_swap")
+async def validate_swap(request: ValidateSwapRequest):
+    """
+    Standalone exercise swap validator — no workout session required.
+    Returns GREEN / YELLOW / RED (uppercase) for test compatibility.
+    """
+    if not validator:
+        raise HTTPException(
+            status_code=503,
+            detail="Validation system not configured. Set PERPLEXITY_API_KEY environment variable."
+        )
+
+    try:
+        result = validator.validate_exercise_swap(
+            original=request.original_exercise,
+            replacement=request.replacement_exercise,
+            reason=request.reason,
+            goal=str(request.goal.value)
+        )
+        return {
+            "verdict": result["verdict"].upper(),   # uppercase: GREEN / YELLOW / RED
+            "verdict_color": _get_verdict_emoji(result["verdict"]),
+            "reasoning": result["reasoning"],
+            "citations": result.get("citations", []),
+            "can_proceed": result["verdict"] in ["green", "yellow"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Swap validation error: {str(e)}")
+
 
 @app.get("/test/{goal}")
 async def test_goal(goal: str, equipment: Optional[str] = "gym", experience: Optional[str] = "intermediate"):
@@ -394,6 +445,19 @@ async def health_check():
         "active_sessions": len(workout_sessions)
     }
 
+@app.delete("/clear_cache")
+def clear_cache():
+    """Dev-only: Clear prescription cache"""
+    try:
+        cache_path = "data/validation_cache/prescription_cache.json"
+        if os.path.exists(cache_path):
+            with open(cache_path, "w") as f:
+                json.dump({}, f)
+        if prescription_validator:
+            prescription_validator.cache = {}
+        return {"status": "cleared"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

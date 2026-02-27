@@ -26,7 +26,7 @@ class FitAppAPI:
                 "experience": experience,
                 "week": week
             },
-            timeout=10
+            timeout=30
         )
         response.raise_for_status()
         return response.json()

@@ -105,13 +105,18 @@ class WorkoutGenerator:
         return exercises
     
     def _generate_strength_workout(self, prescription: Dict, equipment: str, experience: str) -> List[Dict]:
-        """Generate strength-specific workout"""
+        """Generate strength-specific workout (>=4 exercises)"""
         main_params = prescription['strength']['main_lifts']['parameters']
-        
-        # Main competition lifts
-        main_lifts = ['Back Squat', 'Bench Press', 'Deadlift', 'Overhead Press']
+        accessory_params = prescription['strength']['accessory_lifts']['parameters']
+
+        # Main competition lifts (gym) or alternatives (home)
+        if equipment == 'home':
+            main_lifts = ['Goblet Squat', 'Pike Push Up', 'Romanian Deadlift (Dumbbell)', 'Dumbbell Press']
+        else:
+            main_lifts = ['Back Squat', 'Bench Press', 'Deadlift', 'Overhead Press']
+
         exercises = []
-        
+
         for lift in main_lifts[:3]:  # 3 main lifts per session
             exercises.append({
                 'name': lift,
@@ -122,36 +127,121 @@ class WorkoutGenerator:
                 'rpe': main_params['intensity_rpe'],
                 'rest_seconds': self._parse_range(main_params['rest_seconds'])
             })
-        
+
+        # 1 accessory / weak-point lift
+        accessory = 'Paused Squat' if equipment == 'gym' else 'Bulgarian Split Squat'
+        exercises.append({
+            'name': accessory,
+            'type': 'accessory',
+            'sets': self._parse_range(accessory_params['sets']),
+            'reps': [6, 10],  # Accessory rep range for strength (6-10)
+            'rpe': accessory_params['intensity_rpe'],
+            'rest_seconds': self._parse_range(accessory_params['rest_seconds'])
+        })
+
         return exercises
     
     def _generate_endurance_workout(self, prescription: Dict, equipment: str) -> List[Dict]:
-        """Generate endurance-specific workout"""
-        zone2_params = prescription['endurance']['zone_2_aerobic_base']['parameters']
-        
-        return [{
-            'name': f"{equipment.capitalize()} - Zone 2 Aerobic Base",
-            'type': 'cardio_continuous',
-            'duration_minutes': self._parse_range(zone2_params['duration_minutes']),
-            'intensity': f"{zone2_params['intensity_hrmax_percent']} HRmax",
-            'cadence': zone2_params['cadence_pace'],
-            'frequency': zone2_params['frequency']
-        }]
-    
+        """Generate endurance-specific workout with >=4 exercises"""
+        zone2_params  = prescription['endurance']['zone_2_aerobic_base']['parameters']
+        thresh_params = prescription['endurance']['lactate_threshold_tempo']['parameters']
+
+        endurance_exercises_db = {
+            'gym': [
+                'Treadmill Zone-2 Run',
+                'Rowing Machine Intervals',
+                'Stationary Bike Tempo',
+                'Elliptical Steady-State',
+                'Stair Climber Intervals',
+            ],
+            'home': [
+                'Outdoor Zone-2 Run',
+                'Jump Rope Intervals',
+                'Bodyweight Squat Circuits',
+                'Step-Up Aerobic Intervals',
+                'High Knees Circuit',
+            ]
+        }
+
+        exercises_list = endurance_exercises_db.get(equipment, endurance_exercises_db['gym'])
+
+        exercises = []
+        # 3 Zone-2 / aerobic base entries
+        for name in exercises_list[:3]:
+            exercises.append({
+                'name': name,
+                'type': 'cardio_aerobic',
+                'duration_minutes': self._parse_range(zone2_params['duration_minutes']),
+                'intensity': f"{zone2_params['intensity_hrmax_percent']} HRmax",
+                'sets': [1, 1],
+                'reps': [1, 1],
+                'rpe': '6-7',
+                'rest_seconds': [60, 120],
+            })
+        # 1 threshold interval entry
+        exercises.append({
+            'name': f'Lactate Threshold Intervals ({equipment.capitalize()})',
+            'type': 'cardio_threshold',
+            'duration_intervals': thresh_params['duration_intervals'],
+            'intensity': f"{thresh_params['intensity_hrmax_percent']} HRmax",
+            'sets': [1, 1],
+            'reps': [1, 1],
+            'rpe': '7-8',
+            'rest_seconds': [120, 240],  # 2-4 minutes recovery between intervals
+        })
+
+
+        return exercises
     def _generate_fatloss_workout(self, prescription: Dict, equipment: str) -> List[Dict]:
-        """Generate fat loss-specific workout"""
-        hiit_params = prescription['fatloss']['hiit_circuits']['parameters']
-        
-        return [{
-            'name': f"HIIT Circuit ({equipment})",
-            'type': 'hiit_circuit',
-            'work_interval_seconds': self._parse_range(hiit_params['work_interval_seconds']),
-            'rest_interval_seconds': self._parse_range(hiit_params['rest_interval_seconds']),
-            'rounds': self._parse_range(hiit_params['rounds']),
-            'rpe': hiit_params['intensity_rpe'],
-            'exercises_per_round': hiit_params['exercises_per_round']
-        }]
-    
+        """Generate fat loss-specific workout with >=4 exercises"""
+        hiit_params  = prescription['fatloss']['hiit_circuits']['parameters']
+        metcon_params = prescription['fatloss']['metcon']['parameters']
+
+        fatloss_exercises_db = {
+            'gym': [
+                'Kettlebell Swing',
+                'Battle Ropes Sprint',
+                'Barbell Thruster',
+                'Box Jump',
+                'Rowing Machine Sprint',
+            ],
+            'home': [
+                'Burpees',
+                'Jump Squat',
+                'Push Up to Mountain Climber',
+                'High Knees Sprint',
+                'Bodyweight Lunge Jump',
+            ]
+        }
+
+        exercises_list = fatloss_exercises_db.get(equipment, fatloss_exercises_db['gym'])
+
+        exercises = []
+        for name in exercises_list[:4]:
+            exercises.append({
+                'name': name,
+                'type': 'hiit_compound',
+                'work_interval_seconds': self._parse_range(hiit_params['work_interval_seconds']),
+                'rest_interval_seconds': self._parse_range(hiit_params['rest_interval_seconds']),
+                'rounds': self._parse_range(hiit_params['rounds']),
+                'sets': self._parse_range(hiit_params['rounds']),
+                'reps': [10, 15],
+                'rpe': hiit_params['intensity_rpe'],
+                'rest_seconds': self._parse_range(hiit_params['rest_interval_seconds']),
+            })
+
+        # Add one MetCon finisher
+        exercises.append({
+            'name': f'MetCon AMRAP Finisher ({equipment.capitalize()})',
+            'type': 'metcon_amrap',
+            'duration_minutes': 15,
+            'sets': [1, 1],
+            'reps': [1, 1],
+            'rpe': metcon_params['intensity_rpe'],
+            'rest_seconds': [120, 180],  # 2-3 minutes between rounds
+        })
+
+        return exercises
     def _get_exercises_by_equipment(self, exercise_type: str, equipment: str) -> List[str]:
         """Get exercise list by type and equipment (placeholder - expand later)"""
         exercise_db = {
