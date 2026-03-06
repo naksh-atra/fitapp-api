@@ -3,7 +3,7 @@ FitApp Workout Generator API v1.0
 Science-based workouts powered by YAML research prescriptions
 """
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 import uvicorn
@@ -43,9 +43,9 @@ except ImportError as e:
 from repositories import save_workout, get_workout                        # NEW
 
 app = FastAPI(
-    title="🎯 FitApp Workout Generator API",
+    title="Science Based Workout Generator API",
     description="Science-based workout generator with research-validated modifications\n\n4 goals: hypertrophy, strength, endurance, fatloss",
-    version="1.0.0",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -400,14 +400,31 @@ def clear_cache():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# NEW: Retrieve persisted workout by ID
-@app.get("/workouts/{workout_id}")
-def fetch_workout(workout_id: str, user_id: str = Depends(get_current_user)):
-    """Retrieve a previously generated workout from MongoDB"""
-    data = get_workout("anonymous", workout_id)
-    if not data:
-        raise HTTPException(status_code=404, detail="Workout not found")
-    return {"workout_id": workout_id, "data": data}
+@app.get("/workouts")
+async def list_workouts(
+    user_id: str = Depends(get_current_user),  # Extracts from JWT
+    limit: int = Query(default=50, ge=1, le=100),
+):
+    """List user's workout history, newest first."""
+    pipeline = [
+        {"$match": {"user_id": user_id}},
+        {"$sort": {"created_at": -1}},
+        {"$limit": limit},
+        {
+            "$project": {
+                "workout_id": 1,
+                "goal": "$data.goal",
+                "equipment": "$data.equipment",
+                "experience": "$data.experience",
+                "week": "$data.week",
+                "created_at": 1,
+                "evidence_level": "$data.evidence_level",
+            }
+        },
+    ]
+    workouts = list(workouts_col.aggregate(pipeline))
+    return workouts
+
 
 
 if __name__ == "__main__":
