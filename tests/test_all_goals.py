@@ -114,7 +114,7 @@ def test_happy_path(goal, equipment, experience):
     clear_cache()
     resp = requests.post(
         ENDPOINT,
-        json={"goal": goal, "equipment": equipment, "experience": experience, "week": 1},
+        json={"goal": goal, "equipment": equipment, "experience": experience},
         headers=HEADERS,
         timeout=90,
     )
@@ -130,7 +130,7 @@ def test_happy_path(goal, equipment, experience):
 @pytest.mark.parametrize("goal", ALL_GOALS)
 def test_cache_reuse(goal):
     clear_cache()
-    payload = {"goal": goal, "equipment": "gym", "experience": "intermediate", "week": 1}
+    payload = {"goal": goal, "equipment": "gym", "experience": "intermediate"}
 
     # Call 1: populate cache
     resp1 = requests.post(ENDPOINT, json=payload, headers=HEADERS, timeout=90)
@@ -172,17 +172,12 @@ def test_cache_reuse(goal):
     ({"goal": "bulk"},         422),
     ({"experience": "expert"}, 422),
     ({"equipment": "pool"},    422),
-    ({"week": -1},             422),
-    ({"week": 53},             422),
-    ({"week": ""},             422),
-    ({"week": "abc"},          422),
 ])
 def test_validation_errors(test_case, expected_status):
     payload = {
         "goal":       test_case.get("goal",       "hypertrophy"),
         "equipment":  test_case.get("equipment",  "gym"),
         "experience": test_case.get("experience", "beginner"),
-        "week":       test_case.get("week",       1),
     }
     resp = requests.post(ENDPOINT, json=payload, timeout=10)
     assert resp.status_code == expected_status, (
@@ -191,33 +186,6 @@ def test_validation_errors(test_case, expected_status):
     print(f"✅ {test_case} → {resp.status_code}")
 
 
-# ---------------------------------------------------------------------------
-# 4. Edge cases (week boundary + defaults)
-# ---------------------------------------------------------------------------
-
-@pytest.mark.parametrize("goal", ALL_GOALS)
-@pytest.mark.parametrize("case,expect", [
-    ({"week": 1},   200),   # Min valid
-    ({"week": 52},  200),   # Max valid
-    ({"week": 26},  200),   # Mid range
-    ({},            200),   # No week → default
-    ({"week": 0},   422),   # Below ge=1
-    ({"week": 53},  422),   # Above le=52
-    ({"week": ""},  422),   # Wrong type
-])
-def test_edge_cases(goal, case, expect):
-    payload = {
-        "goal":       goal,
-        "equipment":  "gym",
-        "experience": "beginner",
-        **case,
-    }
-    resp = requests.post(ENDPOINT, json=payload, headers=HEADERS, timeout=60)
-    assert resp.status_code < 500, f"500 CRASH on {goal}/{case}"
-    assert resp.status_code == expect, (
-        f"{goal}/{case}: expected {expect}, got {resp.status_code}"
-    )
-    print(f"✅ {goal}/{case} → {resp.status_code}")
 
 
 # ---------------------------------------------------------------------------
@@ -230,8 +198,6 @@ def test_edge_cases(goal, case, expect):
     {"goal": 123},
     {"equipment": None},
     {"goal": "x" * 1000},
-    {"week": [1, 2, 3]},
-    {"goal": "hypertrophy", "week": {"nested": "object"}},
 ])
 def test_toxic_inputs_no_crashes(payload):
     resp = requests.post(ENDPOINT, json=payload, headers=HEADERS, timeout=10)

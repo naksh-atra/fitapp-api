@@ -94,7 +94,6 @@ class WorkoutRequest(BaseModel):
     goal:       Goal
     equipment:  Equipment  = Equipment.gym
     experience: Experience = Experience.intermediate
-    week:       Optional[int] = Field(default=1, ge=1, le=52)
 
 class ModificationRequest(BaseModel):
     workout_id:           str
@@ -157,8 +156,7 @@ async def generate_workout(request: WorkoutRequest, user_id: str = Depends(get_c
         workout    = generator.generate_workout(
             goal=request.goal.lower(),
             equipment=request.equipment.lower(),
-            experience=request.experience.lower(),
-            week=request.week
+            experience=request.experience.lower()
         )
 
         workout_id = f"workout_{datetime.now().strftime('%Y%m%d_%H%M%S')}"

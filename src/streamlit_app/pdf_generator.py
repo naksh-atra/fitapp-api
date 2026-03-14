@@ -18,14 +18,14 @@ class FitAppPDFGenerator:
     """Generate premium PDFs for FitApp workouts"""
     
     def __init__(self):
-        # Color scheme - professional, research-forward
-        self.color_primary = colors.HexColor("#2180a0")      # Teal
-        self.color_success = colors.HexColor("#218054")      # Green
-        self.color_warning = colors.HexColor("#a84b2f")      # Orange
-        self.color_danger = colors.HexColor("#c01550")       # Red
-        self.color_text = colors.HexColor("#1f2121")         # Dark
-        self.color_light = colors.HexColor("#fcfcf9")        # Cream
-        self.color_border = colors.HexColor("#5e5240")       # Brown
+        # Color scheme - Cult.fit Vibrant Branding
+        self.color_primary = colors.HexColor("#FF5722")      # Energy Orange
+        self.color_success = colors.HexColor("#4CAF50")      # Growth Green
+        self.color_warning = colors.HexColor("#FF9800")      # Alert Orange
+        self.color_danger = colors.HexColor("#F44336")       # Stop Red
+        self.color_text = colors.HexColor("#0f0f0f")         # Midnight Black
+        self.color_light = colors.HexColor("#ffffff")        # Pure White
+        self.color_border = colors.HexColor("#FF5722")       # Brand Border
         
     def _strip_markdown(self, text):
         """Clean markdown artifacts from text for basic PDF rendering"""

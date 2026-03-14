@@ -1,19 +1,19 @@
-"""
-FitApp - Science-Based Workout Generator
-Main Streamlit application
-"""
-
 import streamlit as st
+import os
+from style import apply_cult_theme, render_sidebar, render_exercise_card
 
 # Page config
 st.set_page_config(
-    page_title="FitApp - Science-Based Workouts",
-    page_icon="💪",
+    page_title="FitApp | Premium Science-Based Training",
+    page_icon="🔥",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
+# Apply the Cult.fit aesthetic
+apply_cult_theme()
+
+# Initialize session state (MUST happen before render_sidebar)
 if 'current_workout' not in st.session_state:
     st.session_state.current_workout = None
 if 'workout_history' not in st.session_state:
@@ -23,89 +23,50 @@ if 'api_url' not in st.session_state:
 if 'auth_token' not in st.session_state:
     st.session_state.auth_token = None
 
-# Main page
-st.title("💪 FitApp - Science-Based Workout Generator")
-st.markdown("""
-### Research-Validated Training Plans
+# Global Navigation
+render_sidebar()
 
-This app generates workout plans backed by the latest scientific research (2023-2025).
+# Hero Section
+col1, col2 = st.columns([1.2, 1])
 
-**Features:**
-- ✅ Research-backed exercise prescriptions
-- ✅ Real-time modification validation
-- ✅ Green/Yellow/Red safety system
-- ✅ Citation tracking for every recommendation
-
-**How to use:**
-1. **Generate Workout** - Create your base workout plan
-2. **Modify Workout** - Request exercise substitutions with validation
-3. **Export Workout** - Download your final plan with citations
-
----
-
-**Navigate using the sidebar** ➡️
-""")
-
-# Sidebar status
-st.sidebar.title("🔐 Authentication")
-if not st.session_state.auth_token:
-    st.sidebar.warning("Not authenticated")
-    if st.sidebar.button("🔑 Generate Demo Token"):
-        # We'll use a hardcoded dev user for the demo
-        try:
-            # We can't import main because it starts the server. 
-            # We'll call the test endpoint or just generate it if we had access.
-            # For now, let's provide instructions or a simple way to set one.
-            import jwt
-            from datetime import datetime, timedelta
-            import os
-            
-            # Re-implement simple token gen based on auth.py logic
-            JWT_SECRET = "devsecretapplepie" # Matches .env.local
-            JWT_ALGORITHM = "HS256"
-            expire = datetime.utcnow() + timedelta(minutes=60)
-            token = jwt.encode({"sub": "demo-user-123", "exp": expire}, JWT_SECRET, algorithm=JWT_ALGORITHM)
-            
-            st.session_state.auth_token = token
-            st.sidebar.success("✅ Demo Token Generated")
-            st.rerun()
-        except Exception as e:
-            st.sidebar.error(f"Failed to generate token: {e}")
-else:
-    st.sidebar.success("🟢 Authenticated (Demo User)")
-    if st.sidebar.button("Logout"):
-        st.session_state.auth_token = None
-        st.rerun()
-
-st.sidebar.markdown("---")
-st.sidebar.title("📊 Status")
-
-if st.session_state.current_workout:
-    st.sidebar.success("✅ Workout Generated")
-    workout = st.session_state.current_workout
-    st.sidebar.info(f"""
-    **Current Workout:**
-    - Goal: {workout['goal'].title()}
-    - Exercises: {len(workout['exercises'])}
-    - Workout ID: `{workout['workout_id']}`
+with col1:
+    st.title("THE FUTURE OF PERFORMANCE")
+    st.markdown("""
+    ## Science-Backed. Research-Validated.
+    
+    FitApp leverages **Hybrid RAG (Tavily + Perplexity)** to cross-reference every exercise prescription against thousands of medical RCTs and sports science meta-analyses (2023-2025).
+    
+    *Don't just train. Train with evidence.*
     """)
     
-    if 'modification_history' in workout:
-        st.sidebar.warning(f"⚠️ {len(workout['modification_history'])} modification(s) applied")
-else:
-    st.sidebar.warning("⚠️ No workout generated yet")
-    st.sidebar.info("Go to **Generate Workout** to start")
+    if st.button("🚀 Start My Validation"):
+        st.switch_page("pages/1_Generate_Workout.py")
 
-# API status check
-st.sidebar.markdown("---")
-st.sidebar.markdown("**API Connection:**")
-try:
-    import requests
-    response = requests.get(f"{st.session_state.api_url}/health", timeout=2)
-    if response.status_code == 200:
-        st.sidebar.success("🟢 API Online")
-    else:
-        st.sidebar.error("🔴 API Error")
-except:
-    st.sidebar.error("🔴 API Offline")
-    st.sidebar.caption("Run: `python src/api/main.py`")
+with col2:
+    st.image("C:/Users/Acer/.gemini/antigravity/brain/0c349c4c-bd2e-42bf-b97c-9c555324e420/cultfit_hero_banner_1773498627124.png", use_container_width=True)
+
+st.markdown("---")
+
+# Feature Cards
+f1, f2, f3 = st.columns(3)
+with f1:
+    st.markdown("""
+    <div class="exercise-card">
+        <h3>🔬 Medical RAG</h3>
+        <p style="color:#b3b3b3;">Real-time validation against NIH PubMed and ScienceDirect databases.</p>
+    </div>
+    """, unsafe_allow_html=True)
+with f2:
+    st.markdown("""
+    <div class="exercise-card">
+        <h3>⚖️ Swap Verdicts</h3>
+        <p style="color:#b3b3b3;">Our <b>Green/Yellow/Red</b> system ensures substitutions never compromise your goal.</p>
+    </div>
+    """, unsafe_allow_html=True)
+with f3:
+    st.markdown("""
+    <div class="exercise-card">
+        <h3>📄 Smart Export</h3>
+        <p style="color:#b3b3b3;">Generate professional PDFs including full research citations for your coach.</p>
+    </div>
+    """, unsafe_allow_html=True)

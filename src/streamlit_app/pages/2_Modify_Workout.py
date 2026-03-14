@@ -8,8 +8,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_client import FitAppAPI
+from style import apply_cult_theme, render_exercise_card, render_sidebar
 
-st.title("2️⃣ Modify Workout")
+# Apply the Cult.fit aesthetic
+apply_cult_theme()
+render_sidebar()
+
+st.title("SWAP & OPTIMIZE")
 
 # Check if workout exists
 if not st.session_state.current_workout:
@@ -90,20 +95,39 @@ if 'validation_result' in st.session_state:
     
     # Verdict display
     if verdict == 'green':
-        st.success(f"🟢 **GREEN VERDICT** - Modification approved")
+        st.markdown(f"""
+        <div class="verdict-green">
+            <b>🟢 GREEN VERDICT</b><br>
+            Scientific Approval: This modification is bio-mechanically equivalent and supports your {workout['goal']} goals.
+        </div>
+        """, unsafe_allow_html=True)
     elif verdict == 'yellow':
-        st.warning(f"🟡 **YELLOW VERDICT** - Acceptable with adjustments")
+        st.markdown(f"""
+        <div class="verdict-yellow">
+            <b>🟡 YELLOW VERDICT</b><br>
+            Conditional Approval: Proceed with the suggested protocol adjustments.
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.error(f"🔴 **RED VERDICT** - Not recommended")
+        st.markdown(f"""
+        <div class="verdict-red">
+            <b>🔴 RED VERDICT</b><br>
+            Modification Rejected: This substitution may significantly degrade training stimulus for {workout['goal']}.
+        </div>
+        """, unsafe_allow_html=True)
     
     # Reasoning
-    with st.expander("📖 Research Analysis", expanded=True):
-        st.markdown(result['reasoning'])
+    st.markdown("### 🧬 RESEARCH ANALYSIS")
+    st.markdown(f"""
+    <div class="exercise-card" style="font-size:0.95rem; line-height:1.6;">
+    {result['reasoning']}
+    </div>
+    """, unsafe_allow_html=True)
     
     # Citations
-    with st.expander(f"📚 Research Citations ({len(result['citations'])} sources)"):
+    with st.expander(f"📚 View {len(result['citations'])} Research Citations"):
         for i, citation in enumerate(result['citations'], 1):
-            st.markdown(f"{i}. [{citation}]({citation})")
+            st.caption(f"{i}. {citation}")
     
     # Apply modification button (only for green/yellow)
     if result['can_proceed']:

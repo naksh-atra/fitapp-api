@@ -21,8 +21,7 @@ class FitAppAPI:
         self,
         goal: str,
         equipment: str = "gym",
-        experience: str = "intermediate",
-        week: int = 1
+        experience: str = "intermediate"
     ) -> Dict:
         """Generate workout from API"""
         response = requests.post(
@@ -30,8 +29,7 @@ class FitAppAPI:
             json={
                 "goal": goal,
                 "equipment": equipment,
-                "experience": experience,
-                "week": week
+                "experience": experience
             },
             headers=self._get_headers(),
             timeout=45
