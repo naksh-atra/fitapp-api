@@ -5,6 +5,7 @@ Loads YAML prescriptions and generates science-based workouts
 
 import yaml
 import random
+import re
 from typing import Dict, List, Any
 from pathlib import Path
 
@@ -271,13 +272,11 @@ class WorkoutGenerator:
             high_str = parts[1].strip()
             
             # Extract numbers only
-            import re
             low = int(re.search(r'\d+', low_str).group())
             high = int(re.search(r'\d+', high_str).group())
             return [low, high]
         else:
             # Single number
-            import re
             num = int(re.search(r'\d+', range_str).group())
             return [num, num]
 

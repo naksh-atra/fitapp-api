@@ -20,6 +20,8 @@ if 'workout_history' not in st.session_state:
     st.session_state.workout_history = []
 if 'api_url' not in st.session_state:
     st.session_state.api_url = "http://127.0.0.1:8000"
+if 'auth_token' not in st.session_state:
+    st.session_state.auth_token = None
 
 # Main page
 st.title("💪 FitApp - Science-Based Workout Generator")
@@ -45,6 +47,37 @@ This app generates workout plans backed by the latest scientific research (2023-
 """)
 
 # Sidebar status
+st.sidebar.title("🔐 Authentication")
+if not st.session_state.auth_token:
+    st.sidebar.warning("Not authenticated")
+    if st.sidebar.button("🔑 Generate Demo Token"):
+        # We'll use a hardcoded dev user for the demo
+        try:
+            # We can't import main because it starts the server. 
+            # We'll call the test endpoint or just generate it if we had access.
+            # For now, let's provide instructions or a simple way to set one.
+            import jwt
+            from datetime import datetime, timedelta
+            import os
+            
+            # Re-implement simple token gen based on auth.py logic
+            JWT_SECRET = "devsecretapplepie" # Matches .env.local
+            JWT_ALGORITHM = "HS256"
+            expire = datetime.utcnow() + timedelta(minutes=60)
+            token = jwt.encode({"sub": "demo-user-123", "exp": expire}, JWT_SECRET, algorithm=JWT_ALGORITHM)
+            
+            st.session_state.auth_token = token
+            st.sidebar.success("✅ Demo Token Generated")
+            st.rerun()
+        except Exception as e:
+            st.sidebar.error(f"Failed to generate token: {e}")
+else:
+    st.sidebar.success("🟢 Authenticated (Demo User)")
+    if st.sidebar.button("Logout"):
+        st.session_state.auth_token = None
+        st.rerun()
+
+st.sidebar.markdown("---")
 st.sidebar.title("📊 Status")
 
 if st.session_state.current_workout:

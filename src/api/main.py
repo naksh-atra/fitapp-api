@@ -40,7 +40,7 @@ except ImportError as e:
     ValidationCache    = None
     PrescriptionValidator = None
 
-from repositories import save_workout, get_workout                        # NEW
+from repositories import save_workout, get_workout, list_workouts                        # CHANGED
 
 app = FastAPI(
     title="Science Based Workout Generator API",
@@ -401,29 +401,12 @@ def clear_cache():
 
 
 @app.get("/workouts")
-async def list_workouts(
-    user_id: str = Depends(get_current_user),  # Extracts from JWT
+async def list_workouts_handler(
+    user_id: str = Depends(get_current_user), 
     limit: int = Query(default=50, ge=1, le=100),
 ):
     """List user's workout history, newest first."""
-    pipeline = [
-        {"$match": {"user_id": user_id}},
-        {"$sort": {"created_at": -1}},
-        {"$limit": limit},
-        {
-            "$project": {
-                "workout_id": 1,
-                "goal": "$data.goal",
-                "equipment": "$data.equipment",
-                "experience": "$data.experience",
-                "week": "$data.week",
-                "created_at": 1,
-                "evidence_level": "$data.evidence_level",
-            }
-        },
-    ]
-    workouts = list(workouts_col.aggregate(pipeline))
-    return workouts
+    return list_workouts(user_id, limit)
 
 
 

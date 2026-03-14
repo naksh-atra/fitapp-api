@@ -57,7 +57,7 @@ with st.form("workout_form"):
 if submitted:
     with st.spinner("Generating science-based workout..."):
         try:
-            api = FitAppAPI(st.session_state.api_url)
+            api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
             result = api.generate_workout(
                 goal=goal,
                 equipment=equipment,

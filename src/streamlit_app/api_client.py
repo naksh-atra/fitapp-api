@@ -7,9 +7,16 @@ from typing import Dict, Optional
 
 
 class FitAppAPI:
-    def __init__(self, base_url: str = "http://127.0.0.1:8000"):
+    def __init__(self, base_url: str = "http://127.0.0.1:8000", token: Optional[str] = None):
         self.base_url = base_url
-    
+        self.token = token
+
+    def _get_headers(self):
+        headers = {}
+        if self.token:
+            headers["Authorization"] = f"Bearer {self.token}"
+        return headers
+
     def generate_workout(
         self,
         goal: str,
@@ -26,11 +33,12 @@ class FitAppAPI:
                 "experience": experience,
                 "week": week
             },
-            timeout=30
+            headers=self._get_headers(),
+            timeout=45
         )
         response.raise_for_status()
         return response.json()
-    
+
     def validate_modification(
         self,
         workout_id: str,
@@ -49,11 +57,12 @@ class FitAppAPI:
                 "reason": reason,
                 "goal": goal
             },
+            headers=self._get_headers(),
             timeout=30  # Perplexity API can be slow
         )
         response.raise_for_status()
         return response.json()
-    
+
     def apply_modification(
         self,
         workout_id: str,
@@ -78,6 +87,7 @@ class FitAppAPI:
                 "citations": citations,
                 "adjustments": adjustments
             },
+            headers=self._get_headers(),
             timeout=10
         )
         response.raise_for_status()

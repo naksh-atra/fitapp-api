@@ -426,11 +426,11 @@ Include full citation URLs.
         payload = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": "You are a sports science researcher analyzing workout prescriptions. Provide evidence-based analysis with recent citations (2023-2025). Always include full citation URLs."},
+                {"role": "system", "content": "You are a sports science researcher analyzing workout prescriptions. Provide concise evidence-based analysis with recent citations (2023-2025). Always include full citation URLs."},
                 {"role": "user", "content": f"Goal: {goal}\nPrescription: {query}"}
             ],
             "temperature": 0.1,
-            "max_tokens": 1000
+            "max_tokens": 500
         }
 
         headers = {
@@ -468,15 +468,21 @@ Include full citation URLs.
                 return {"error": "Invalid response structure (no choices)", "status_code": 502}
 
             raw_content = result['choices'][0]['message']['content']
+            api_citations = result.get('citations', [])
 
             print(f"\n🔍 RAW CONTENT ({len(raw_content)} chars):")
             print("-" * 80)
             print(raw_content[:800])
             print("-" * 80)
-            print("URLs found: " + str(re.findall(r'https?://[^\s\)]+', raw_content)))
+            
+            # Combine regex found URLs with dedicated API citations
+            regex_urls = re.findall(r'https?://[^\s\)]+', raw_content)
+            all_found = list(set(regex_urls + api_citations))
+            
+            print(f"URLs found: {all_found}")
             print()
 
-            return {"success": True, "content": raw_content}
+            return {"success": True, "content": raw_content, "api_citations": api_citations}
 
         except requests.exceptions.RequestException as e:
             print(f"Network error: {e}")
@@ -500,22 +506,51 @@ Include full citation URLs.
             }
 
         raw_response = response["content"]
+        api_citations = response.get("api_citations", [])
+        
+        # Also extract from text in case they are only there
         url_pattern = r'https?://[^\s\)]+'
-        all_urls = re.findall(url_pattern, raw_response)
+        text_urls = re.findall(url_pattern, raw_response)
 
+        # Merge and clean
+        combined_urls = list(set(api_citations + text_urls))
+        
         citations = [
-            url for url in set(all_urls)
+            url for url in combined_urls
             if not any(exclude in url.lower() for exclude in [
                 'api.perplexity.ai', 'localhost', '127.0.0.1',
                 'example.com', 'streamlit.io', 'ngrok.io',
             ])
         ]
 
-        confidence = "high"
-        if "not optimal" in raw_response.lower() or "limited evidence" in raw_response.lower():
-            confidence = "medium"
-        if "insufficient" in raw_response.lower() or "no evidence" in raw_response.lower():
+        # Smarter confidence scoring
+        text = raw_response.lower()
+        
+        # Start at medium, look for evidence to go up or down
+        confidence = "medium"
+        
+        # Positive triggers
+        high_indicators = [
+            "strongly supported", "aligns with", "highly effective", 
+            "gold standard", "consistent with evidence", "optimal"
+        ]
+        
+        # Negative triggers (more specific to avoid false positives)
+        low_indicators = [
+            "insufficient evidence", "no scientific evidence", 
+            "contradicts research", "unsafe", "lacks validation"
+        ]
+        
+        if any(kw in text for kw in high_indicators):
+            confidence = "high"
+        
+        # Only set to low if a clear negative indicator is found
+        if any(kw in text for kw in low_indicators):
             confidence = "low"
+        
+        # Edge case: if it says "not optimal" but has high indicators, revert to medium
+        if "not optimal" in text and confidence == "high":
+            confidence = "medium"
 
         return {
             "validated": True,

@@ -98,7 +98,7 @@ def test_cache_reuse():
     assert elapsed < 5.0, f"Cache too slow: {elapsed}s"
     
     data2 = resp2.json()["data"]
-    assert len(data1["exercises"]) == len(data2["exercises"])
+    assert len(data1["data"]["exercises"]) == len(data2["exercises"])
     print(f"✅ Cache reuse: {elapsed:.1f}s")
 
 @pytest.mark.parametrize("test_case, expected_status", [

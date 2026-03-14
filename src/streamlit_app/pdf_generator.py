@@ -11,6 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from datetime import datetime
 import io
+import re
 
 
 class FitAppPDFGenerator:
@@ -25,6 +26,18 @@ class FitAppPDFGenerator:
         self.color_text = colors.HexColor("#1f2121")         # Dark
         self.color_light = colors.HexColor("#fcfcf9")        # Cream
         self.color_border = colors.HexColor("#5e5240")       # Brown
+        
+    def _strip_markdown(self, text):
+        """Clean markdown artifacts from text for basic PDF rendering"""
+        if not text:
+            return ""
+        # Remove bold/italic markers
+        text = re.sub(r'[*_~`]', '', text)
+        # Remove markdown headers
+        text = re.sub(r'#+\s', '', text)
+        # Remove links: [text](url) -> text
+        text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+        return text.strip()
     
     def generate(self, workout: dict, filename: str = None) -> bytes:
         """
@@ -218,9 +231,10 @@ class FitAppPDFGenerator:
             story.append(Spacer(1, 0.15*inch))
             story.append(Paragraph("<b>Research Validation:</b>", heading_style))
             
-            # Truncate evidence summary for PDF (first 500 chars)
-            evidence_text = validation['evidence_summary'][:500]
-            if len(validation['evidence_summary']) > 500:
+            # Clean and truncate evidence summary for PDF (first 500 chars)
+            clean_evidence = self._strip_markdown(validation['evidence_summary'])
+            evidence_text = clean_evidence[:500]
+            if len(clean_evidence) > 500:
                 evidence_text += "... (see full citations below)"
             
             story.append(Paragraph(evidence_text, summary_style))

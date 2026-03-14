@@ -61,7 +61,7 @@ if validate_button:
     else:
         with st.spinner("Validating with research database... (this may take 5-10 seconds)"):
             try:
-                api = FitAppAPI(st.session_state.api_url)
+                api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
                 validation_result = api.validate_modification(
                     workout_id=workout['workout_id'],
                     original_exercise=selected_exercise,
@@ -115,7 +115,7 @@ if 'validation_result' in st.session_state:
         if st.button("✅ Apply This Modification", use_container_width=True, type="primary"):
             with st.spinner("Applying modification..."):
                 try:
-                    api = FitAppAPI(st.session_state.api_url)
+                    api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
                     
                     # Apply modification
                     apply_result = api.apply_modification(

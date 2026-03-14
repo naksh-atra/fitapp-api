@@ -43,3 +43,24 @@ def save_cached_validation(cache_key: str, meta: Dict, validation_result: Dict) 
         },
         upsert=True,
     )
+
+
+def list_workouts(user_id: str, limit: int = 50) -> list:
+    """List user's workout history from MongoDB."""
+    pipeline = [
+        {"$match": {"user_id": user_id}},
+        {"$sort": {"created_at": -1}},
+        {"$limit": limit},
+        {
+            "$project": {
+                "workout_id": 1,
+                "goal": "$data.goal",
+                "equipment": "$data.equipment",
+                "experience": "$data.experience",
+                "week": "$data.week",
+                "created_at": 1,
+                "evidence_level": "$data.evidence_level",
+            }
+        },
+    ]
+    return list(workouts_col.aggregate(pipeline))
