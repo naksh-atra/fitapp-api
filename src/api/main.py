@@ -11,6 +11,7 @@ import sys
 import os
 from pathlib import Path
 from datetime import datetime
+import traceback
 from dotenv import load_dotenv
 from enum import Enum
 from auth import get_current_user, create_access_token
@@ -42,7 +43,8 @@ except ImportError as e:
 
 from repositories import (
     save_workout, get_workout, list_workouts, 
-    get_cached_validation, save_cached_validation
+    get_cached_validation as db_get_cache, 
+    save_cached_validation as db_save_cache
 )
 
 app = FastAPI(
@@ -228,7 +230,8 @@ async def validate_modification(request: ModificationRequest):
     components = f"{request.original_exercise}|{request.replacement_exercise}|{request.reason}|{request.goal}".lower()
     m_cache_key = hashlib.md5(components.encode()).hexdigest()
     
-    cached = get_cached_validation(m_cache_key)
+    print(f"DEBUG: Validating {request.original_exercise} -> {request.replacement_exercise}")
+    cached = db_get_cache(m_cache_key)
     
     # 2. Fallback to File Cache
     if not cached and cache:
@@ -267,7 +270,7 @@ async def validate_modification(request: ModificationRequest):
             )
         
         # Save to MongoDB Cache
-        save_cached_validation(
+        db_save_cache(
             cache_key=m_cache_key,
             meta={
                 "original": request.original_exercise,
@@ -295,7 +298,9 @@ async def validate_modification(request: ModificationRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Validation error: {str(e)}. Unable to validate with research API.")
+        print("❌ VALIDATION CRASH:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Validation error: {str(e)}. See server logs for traceback.")
 
 
 @app.post("/apply_modification")
