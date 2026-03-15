@@ -1,78 +1,72 @@
-"""
-FitApp - Science-Based Workout Generator
-Main Streamlit application
-"""
-
 import streamlit as st
+import os
+from style import apply_cult_theme, render_sidebar, render_exercise_card
 
 # Page config
 st.set_page_config(
-    page_title="FitApp - Science-Based Workouts",
-    page_icon="💪",
+    page_title="ResFit | Research-Backed Performance",
+    page_icon="🔥",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
-if 'current_workout' not in st.session_state:
-    st.session_state.current_workout = None
-if 'workout_history' not in st.session_state:
-    st.session_state.workout_history = []
-if 'api_url' not in st.session_state:
-    st.session_state.api_url = "http://127.0.0.1:8000"
+# Apply the Premium ResFit aesthetic
+apply_cult_theme()
 
-# Main page
-st.title("💪 FitApp - Science-Based Workout Generator")
-st.markdown("""
-### Research-Validated Training Plans
+# Initialize session state (MUST happen before render_sidebar)
+if 'current_workout' not in st.session_state: st.session_state.current_workout = None
+if 'workout_history' not in st.session_state: st.session_state.workout_history = []
+if 'api_url' not in st.session_state: st.session_state.api_url = os.getenv("API_URL", "http://127.0.0.1:8000")
+if 'auth_token' not in st.session_state: st.session_state.auth_token = None
 
-This app generates workout plans backed by the latest scientific research (2023-2025).
+# Global Navigation
+render_sidebar()
 
-**Features:**
-- ✅ Research-backed exercise prescriptions
-- ✅ Real-time modification validation
-- ✅ Green/Yellow/Red safety system
-- ✅ Citation tracking for every recommendation
+# Hero Section
+st.markdown("<br><br>", unsafe_allow_html=True)
+col1, col2 = st.columns([1.1, 1], gap="large")
 
-**How to use:**
-1. **Generate Workout** - Create your base workout plan
-2. **Modify Workout** - Request exercise substitutions with validation
-3. **Export Workout** - Download your final plan with citations
-
----
-
-**Navigate using the sidebar** ➡️
-""")
-
-# Sidebar status
-st.sidebar.title("📊 Status")
-
-if st.session_state.current_workout:
-    st.sidebar.success("✅ Workout Generated")
-    workout = st.session_state.current_workout
-    st.sidebar.info(f"""
-    **Current Workout:**
-    - Goal: {workout['goal'].title()}
-    - Exercises: {len(workout['exercises'])}
-    - Workout ID: `{workout['workout_id']}`
-    """)
+with col1:
+    st.markdown("""
+    <h1 style='font-size: 5rem; margin-bottom: 0;'>RESFIT</h1>
+    <h2 style='font-size: 1.5rem; color: #FF5722; margin-top: -10px;'>PRECISION RESEARCH ENGINE</h2>
+    <p style='font-size: 1.2rem; color: #888; margin: 2rem 0;'>
+        Stop following generic routines. ResFit cross-references your training against <b>Hybrid RAG Validation</b> 
+        to ensure every rep is backed by the latest sports science (2023-2025).
+    </p>
+    """, unsafe_allow_html=True)
     
-    if 'modification_history' in workout:
-        st.sidebar.warning(f"⚠️ {len(workout['modification_history'])} modification(s) applied")
-else:
-    st.sidebar.warning("⚠️ No workout generated yet")
-    st.sidebar.info("Go to **Generate Workout** to start")
+    if st.button("🚀 INITIATE VALIDATION"):
+        st.switch_page("pages/1_Generate_Workout.py")
 
-# API status check
-st.sidebar.markdown("---")
-st.sidebar.markdown("**API Connection:**")
-try:
-    import requests
-    response = requests.get(f"{st.session_state.api_url}/health", timeout=2)
-    if response.status_code == 200:
-        st.sidebar.success("🟢 API Online")
-    else:
-        st.sidebar.error("🔴 API Error")
-except:
-    st.sidebar.error("🔴 API Offline")
-    st.sidebar.caption("Run: `python src/api/main.py`")
+with col2:
+    st.image("src/streamlit_app/assets/resfit_banner.png", width="stretch")
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
+# Feature Grid
+f1, f2, f3 = st.columns(3, gap="medium")
+
+with f1:
+    st.markdown("""
+    <div class="premium-card">
+        <h3 style="color:#FF5722;">🔬 HYBRID RAG</h3>
+        <p style="color:#888; font-size: 0.9rem;">Real-time validation via Perplexity & Tavily across NIH PubMed & ScienceDirect.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with f2:
+    st.markdown("""
+    <div class="premium-card">
+        <h3 style="color:#FF5722;">⛓️ ADAPTIVE SWAPS</h3>
+        <p style="color:#888; font-size: 0.9rem;">The Green/Yellow/Red verdict system ensures substitutions maintain physiological target.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with f3:
+    st.markdown("""
+    <div class="premium-card">
+        <h3 style="color:#FF5722;">🏛️ CULT FIT DNA</h3>
+        <p style="color:#888; font-size: 0.9rem;">Engineered for mobile-first performance. Premium aesthetics for professional coaches.</p>
+    </div>
+    """, unsafe_allow_html=True)

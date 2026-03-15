@@ -5,6 +5,7 @@ Loads YAML prescriptions and generates science-based workouts
 
 import yaml
 import random
+import re
 from typing import Dict, List, Any
 from pathlib import Path
 
@@ -32,13 +33,13 @@ class WorkoutGenerator:
         
         return prescriptions
     
-    def generate_workout(self, goal: str, equipment: str = "gym", experience: str = "intermediate", week: int = 1) -> Dict:
+    def generate_workout(self, goal: str, equipment: str = "gym", experience: str = "intermediate") -> Dict:
         """Generate complete workout for specified goal"""
         if goal not in self.prescriptions:
             raise ValueError(f"Goal '{goal}' not found. Available: {list(self.prescriptions.keys())}")
         
         prescription = self.prescriptions[goal]
-        workout = self._build_workout_structure(goal, equipment, experience, week)
+        workout = self._build_workout_structure(goal, equipment, experience)
         
         # Add exercises based on goal-specific logic
         if goal == "hypertrophy":
@@ -56,17 +57,16 @@ class WorkoutGenerator:
         
         return workout
     
-    def _build_workout_structure(self, goal: str, equipment: str, experience: str, week: int) -> Dict:
+    def _build_workout_structure(self, goal: str, equipment: str, experience: str) -> Dict:
         """Build base workout structure"""
         return {
             'goal': goal,
             'equipment': equipment,
             'experience': experience,
-            'week': week,
             'session_type': 'main',
             'total_duration_minutes': 60,
             'exercises': [],
-            'notes': f"Week {week} progression from {self.prescriptions[goal]['metadata']['source_file']}"
+            'notes': f"Evidence-based prescription from {self.prescriptions[goal]['metadata']['source_file']}"
         }
     
     def _generate_hypertrophy_workout(self, prescription: Dict, equipment: str, experience: str) -> List[Dict]:
@@ -271,13 +271,11 @@ class WorkoutGenerator:
             high_str = parts[1].strip()
             
             # Extract numbers only
-            import re
             low = int(re.search(r'\d+', low_str).group())
             high = int(re.search(r'\d+', high_str).group())
             return [low, high]
         else:
             # Single number
-            import re
             num = int(re.search(r'\d+', range_str).group())
             return [num, num]
 
