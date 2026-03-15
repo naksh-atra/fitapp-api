@@ -122,6 +122,11 @@ class ValidateSwapRequest(BaseModel):
     goal:                 Goal = Goal.hypertrophy
 
 
+def _get_verdict_emoji(verdict: str) -> str:
+    mapping = {"green": "🟢", "yellow": "🟡", "red": "🔴"}
+    return mapping.get(verdict.lower(), "⚪")
+
+
 @app.get("/")
 async def root():
     return {
