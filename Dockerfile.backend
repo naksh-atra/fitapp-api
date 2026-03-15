@@ -18,7 +18,7 @@ COPY config/ ./config/
 # COPY .env.local ./.env.local #to be handled by railway
 
 # Set environment variables
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app/src:/app/src/api
 ENV PYTHONUNBUFFERED=1
 
 # Expose FastAPI port
