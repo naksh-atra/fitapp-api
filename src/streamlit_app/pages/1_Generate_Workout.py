@@ -1,130 +1,103 @@
-"""
-Page 1: Generate Workout
-"""
-
 import streamlit as st
 import sys
-from pathlib import Path
 import os
+from pathlib import Path
 
 # Add utils to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_client import FitAppAPI
 from style import apply_cult_theme, render_exercise_card, render_sidebar
 
-# Apply the Cult.fit aesthetic
+# Page config
+st.set_page_config(
+    page_title="ResFit | Generate Performance",
+    page_icon="⚡",
+    layout="wide"
+)
+
+# Apply the Premium ResFit aesthetic
 apply_cult_theme()
 render_sidebar()
 
-st.title("PLAN YOUR SQUAD")
+st.markdown("<h1 style='font-size: 3rem;'>INITIATE PROTOCOL</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color:#666;'>Configure your performance targets and let the Research Engine build your validated plan.</p>", unsafe_allow_html=True)
 
-st.markdown("""
-Create your science-based workout plan. All parameters are derived from recent research (2023-2025).
-""")
-
-# Form
-with st.form("workout_form"):
-    st.subheader("Workout Parameters")
-    
+# Form Section
+with st.form("generation_form", clear_on_submit=False):
     col1, col2 = st.columns(2)
     
     with col1:
         goal = st.selectbox(
-            "Training Goal",
+            "Primary Objective",
             ["hypertrophy", "strength", "endurance", "fatloss"],
-            help="Your primary training objective"
+            help="Your training goal"
         )
-        
         equipment = st.selectbox(
-            "Available Equipment",
+            "Kit Access",
             ["gym", "home"],
-            help="What equipment you have access to"
+            help="Available tools"
         )
     
     with col2:
         experience = st.selectbox(
-            "Experience Level",
+            "Experience Tier",
             ["beginner", "intermediate", "advanced"],
-            help="Your training experience"
+            help="Your current training baseline"
         )
     
-    submitted = st.form_submit_button("🎯 Generate Workout", use_container_width=True)
+    submitted = st.form_submit_button("🔥 GENERATE PERFORMANCE PLAN", width="stretch")
 
-# Generate workout
+# Processing Logic
 if submitted:
-    with st.spinner("Generating science-based workout..."):
-        try:
-            api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
-            result = api.generate_workout(
-                goal=goal,
-                equipment=equipment,
-                experience=experience
-            )
-            
-            # Store in session state
-            st.session_state.current_workout = result['data']
-            st.session_state.workout_history.append(result['data'])
-            
-            st.success("✅ Workout generated successfully!")
-            st.balloons()
-            
-        except Exception as e:
-            st.error(f"❌ Error: {str(e)}")
-            st.info("Make sure the API is running: `python src/api/main.py`")
+    if not st.session_state.auth_token:
+        st.error("🔑 Demo Token Required. Please activate it in the sidebar.")
+    else:
+        with st.spinner("🚀 CROSS-REFERENCING RESEARCH DATABASES..."):
+            try:
+                api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
+                result = api.generate_workout(
+                    goal=goal,
+                    equipment=equipment,
+                    experience=experience
+                )
+                
+                # Store in session state
+                st.session_state.current_workout = result['data']
+                st.session_state.workout_id = result['workout_id']
+                st.success(f"Protocol Generated: {result['workout_id']}")
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"❌ COMPUTE ERROR: {str(e)}")
 
-# Display current workout
+# Display Workout
 if st.session_state.current_workout:
-    st.markdown("---")
-    st.subheader("📋 Your Workout Plan")
-    
     workout = st.session_state.current_workout
     
-    # Metadata
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Goal", workout['goal'].title())
-    col2.metric("Exercises", len(workout['exercises']))
-    col3.metric("Duration", f"{workout['total_duration_minutes']} min")
-    col4.metric("Evidence", workout.get('evidence_level', 'High'))
+    st.markdown("---")
     
-    st.caption(f"**Workout ID:** `{workout['workout_id']}`")
-    st.caption(f"**Source:** {workout.get('prescription_source', 'N/A')}")
-    
-    # Exercises Grid
-    st.markdown("### ⚡ EXERCISE SESSION")
-    
-    for i, ex in enumerate(workout['exercises'], 1):
-        sets = ex['sets']
-        reps = ex['reps']
-        sets_str = f"{sets[0]}-{sets[1]}" if isinstance(sets, list) else str(sets)
-        reps_str = f"{reps[0]}-{reps[1]}" if isinstance(reps, list) else str(reps)
-        
-        render_exercise_card(
-            name=f"{i}. {ex['name']}",
-            sets=sets_str,
-            reps=reps_str,
-            notes=f"Rest: {ex['rest_seconds']}s | Tempo: {ex.get('tempo','N/A')}"
-        )
-    
-    # Research Validation Panel
+    # Research Validation Header
     if 'research_validation' in workout:
-        st.markdown("---")
-        st.markdown("""
-        <div class="exercise-card" style="border-color: #FF9100;">
-            <h3 style="color: #FF9100;">🔬 RESEARCH INSIGHT</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
         val = workout['research_validation']
         st.markdown(f"""
-        <div class="alert-info" style="margin-bottom:20px;">
-        {val.get('evidence_summary', 'Synthesis in progress...')}
+        <div class="verdict-card verdict-green">
+            <h3 style="margin:0; color:#00FF88;">✓ SCIENCE VALIDATED</h3>
+            <p style="margin:5px 0 0 0; font-size:0.9rem; color:#B0B0B0;">{val['evidence_summary']}</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if val.get('citations'):
-            st.markdown("**Scientific References:**")
-            for cite in val['citations'][:3]: # Top 3
-                st.caption(f"🔗 {cite}")
 
+    # Main Workout Display
+    st.markdown("### EXERCISE SEQUENCE")
+    
+    for ex in workout['exercises']:
+        render_exercise_card(ex)
+
+    # PDF & Actions
     st.markdown("---")
-    st.info("💡 **Next:** Go to **Modify Workout** to customize exercises")
+    colA, colB = st.columns([1, 1])
+    with colA:
+        if st.button("🔄 RE-GENERATE PROTOCOL", width="stretch"):
+            st.session_state.current_workout = None
+            st.rerun()
+    with colB:
+        st.info("💡 Premium PDF Export Available in Build V2.1")

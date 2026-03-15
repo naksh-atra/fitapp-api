@@ -1,6 +1,7 @@
 # src/validation/research_validator.py
 import os
 import requests
+import re
 from typing import Dict, Literal
 
 
@@ -61,11 +62,15 @@ class ResearchValidator:
     def _build_validation_prompt(self, original, replacement, reason, goal):
         goal_context = self.SUBSTITUTION_CONTEXT.get(goal, self.SUBSTITUTION_CONTEXT["hypertrophy"])
         return f"""
-        Evaluate this exercise substitution for {goal}:
-
+        Evaluate or suggest an exercise substitution for {goal}:
+        
         ORIGINAL: {original}
-        PROPOSED REPLACEMENT: {replacement}
+        PROPOSED REPLACEMENT/CONSTRAINT: {replacement}
         REASON: {reason}
+
+        INSTRUCTION:
+        1. If the PROPOSED REPLACEMENT is a specific exercise, evaluate its biomechanical equivalence and effectiveness.
+        2. If the PROPOSED REPLACEMENT is a constraint (e.g., 'no kettlebells', 'something at home', 'easier version') or is vague, use your research knowledge to SUGGEST the single best Canonical Replacement that aligns with the original goal and honors the constraint.
 
         Analyze:
         1. Muscle activation comparison (primary & secondary muscles)
@@ -79,9 +84,14 @@ class ResearchValidator:
         - YELLOW if 70-90% as effective with adjustments
         - RED if <70% effective or unsafe
 
-        Verdict criteria for {goal}: {goal_context}
+        Format your response exactly as follows at the VERY START:
+        CANONICAL NAME: [Exact Name of Suggested Replacement Exercise]
+        VERDICT: [GREEN/YELLOW/RED]
+        PERCENTAGE: [XX]%
 
-        Include specific study citations and effectiveness percentage.
+        Then provide detailed analysis and citations.
+        
+        Verdict criteria for {goal}: {goal_context}
         """
 
     def _parse_api_response(self, response_data: Dict) -> Dict:
@@ -94,6 +104,10 @@ class ResearchValidator:
         """
         content = response_data['choices'][0]['message']['content']
         citations = response_data.get('citations', [])
+
+        # Extract Canonical Name
+        canonical_match = re.search(r"CANONICAL NAME:\s*(.*)", content, re.IGNORECASE)
+        corrected_name = canonical_match.group(1).strip() if canonical_match else None
 
         # Detect verdict (case-insensitive search, return lowercase)
         content_upper = content.upper()
@@ -108,6 +122,7 @@ class ResearchValidator:
 
         return {
             "verdict": verdict,
+            "corrected_name": corrected_name,
             "reasoning": content,
             "citations": citations,
             "timestamp": response_data.get('created')

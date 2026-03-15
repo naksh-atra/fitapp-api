@@ -230,6 +230,7 @@ async def validate_modification(request: ModificationRequest):
             "reasoning":     cached['reasoning'],
             "citations":     cached.get('citations', []),
             "source":        "cache",
+            "corrected_name": cached.get('corrected_name') or request.replacement_exercise,
             "cached_date":   cached.get('timestamp'),
             "can_proceed":   cached['verdict'] in ['green', 'yellow']
         }
@@ -258,6 +259,7 @@ async def validate_modification(request: ModificationRequest):
             "reasoning":       result['reasoning'],
             "citations":       result.get('citations', []),
             "source":          "perplexity_api",
+            "corrected_name":  result.get('corrected_name') or request.replacement_exercise,
             "adjustments":     result.get('adjustments', {}),
             "can_proceed":     result['verdict'] in ['green', 'yellow'],
             "warning":         "Proceed with caution - suboptimal substitution" if result['verdict'] == 'yellow' else None

@@ -6,7 +6,7 @@ import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-JWT_SECRET = os.getenv("JWT_SECRET") or "dev-secret-fallback"
+JWT_SECRET = os.getenv("JWT_SECRET") or "devsecretapplepie"
 JWT_ALGORITHM = "HS256"
 
 security = HTTPBearer(auto_error=False)

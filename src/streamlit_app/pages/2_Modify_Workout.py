@@ -1,7 +1,3 @@
-"""
-Page 2: Modify Workout
-"""
-
 import streamlit as st
 import sys
 from pathlib import Path
@@ -10,163 +6,129 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_client import FitAppAPI
 from style import apply_cult_theme, render_exercise_card, render_sidebar
 
-# Apply the Cult.fit aesthetic
+# Page config
+st.set_page_config(
+    page_title="ResFit | Protocol Optimization",
+    page_icon="⚖️",
+    layout="wide"
+)
+
+# Apply the Premium ResFit aesthetic
 apply_cult_theme()
 render_sidebar()
 
-st.title("SWAP & OPTIMIZE")
+# Initialize last validation state
+if 'last_validation' not in st.session_state:
+    st.session_state.last_validation = None
 
-# Check if workout exists
+st.markdown("<h1 style='font-size: 3rem;'>PROTOCOL OPTIMIZATION</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color:#666;'>Swap exercises while maintaining physiological target through Research Validation.</p>", unsafe_allow_html=True)
+
 if not st.session_state.current_workout:
-    st.warning("⚠️ No workout generated yet")
-    st.info("Go to **Generate Workout** first")
-    st.stop()
-
-workout = st.session_state.current_workout
-
-st.markdown("""
-Request exercise substitutions. The system will validate your request using research and return a verdict:
-- 🟢 **GREEN**: Equivalent or better
-- 🟡 **YELLOW**: Acceptable with adjustments
-- 🔴 **RED**: Not recommended
-""")
-
-# Select exercise to modify
-st.subheader("Select Exercise to Modify")
-
-exercise_names = [ex['name'] for ex in workout['exercises']]
-selected_exercise = st.selectbox(
-    "Choose exercise",
-    exercise_names,
-    help="Select the exercise you want to replace"
-)
-
-# Modification form
-with st.form("modification_form"):
-    st.subheader("Propose Replacement")
+    st.markdown("""
+    <div class="premium-card" style="text-align:center; padding: 3rem;">
+        <h3 style="color:#666;">NO ACTIVE PROTOCOL FOUND</h3>
+        <p>Please generate a performance plan first.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("🚀 GO TO GENERATOR"):
+        st.switch_page("pages/1_Generate_Workout.py")
+else:
+    workout = st.session_state.current_workout
     
-    replacement = st.text_input(
-        "Replacement Exercise",
-        placeholder="e.g., Leg Press, Dumbbell Bench Press, etc.",
-        help="Enter the exercise you want to use instead"
-    )
+    st.markdown("### STEP 1: SELECT ORIGINAL TARGET")
+    exercise_names = [ex['name'] for ex in workout['exercises']]
     
-    reason = st.selectbox(
-        "Reason for Change",
-        ["knee_pain", "shoulder_pain", "lower_back_pain", "no_equipment", "preference", "injury", "other"],
-        help="Why do you need this substitution?"
-    )
+    selected_original = st.selectbox("Select Target to Swap", exercise_names)
     
-    validate_button = st.form_submit_button("🔬 Validate Modification", use_container_width=True)
+    st.markdown("### STEP 2: CONFIGURE MODIFICATION")
+    # Form Section
+    with st.form("modification_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            replacement = st.text_input("Replacement or Constraint", placeholder=" ")
+        with col2:
+            reason = st.selectbox("Reason for Modification", 
+                                ["Equipment Unavailable", "Injury/Pain", "Preference", "Difficulty"])
+        
+        validate_button = st.form_submit_button("⚖️ VALIDATE SWAP VIA RESEARCH", width="stretch")
 
-# Validate modification
-if validate_button:
-    if not replacement:
-        st.error("❌ Please enter a replacement exercise")
-    else:
-        with st.spinner("Validating with research database... (this may take 5-10 seconds)"):
+    # 1. HANDLE VALIDATION
+    if validate_button:
+        with st.spinner("🔍 SCANNING MEDICAL RCTs & META-ANALYSES..."):
             try:
                 api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
-                validation_result = api.validate_modification(
-                    workout_id=workout['workout_id'],
-                    original_exercise=selected_exercise,
+                result = api.validate_modification(
+                    workout_id=st.session_state.workout_id,
+                    original_exercise=selected_original,
                     replacement_exercise=replacement,
                     reason=reason,
                     goal=workout['goal']
                 )
                 
-                # Store validation result
-                st.session_state.validation_result = validation_result
-                
-                st.success("✅ Validation complete!")
+                # Store validation result for second step
+                st.session_state.last_validation = {
+                    "result": result,
+                    "original": selected_original,
+                    "replacement": replacement
+                }
                 
             except Exception as e:
-                st.error(f"❌ Validation failed: {str(e)}")
-                st.stop()
+                st.error(f"❌ VALIDATION FAILED: {str(e)}")
+                st.session_state.last_validation = None
 
-# Display validation result
-if 'validation_result' in st.session_state:
-    result = st.session_state.validation_result
-    
-    st.markdown("---")
-    st.subheader("📊 Validation Result")
-    
-    verdict = result['verdict']
-    
-    # Verdict display
-    if verdict == 'green':
-        st.markdown(f"""
-        <div class="verdict-green">
-            <b>🟢 GREEN VERDICT</b><br>
-            Scientific Approval: This modification is bio-mechanically equivalent and supports your {workout['goal']} goals.
-        </div>
-        """, unsafe_allow_html=True)
-    elif verdict == 'yellow':
-        st.markdown(f"""
-        <div class="verdict-yellow">
-            <b>🟡 YELLOW VERDICT</b><br>
-            Conditional Approval: Proceed with the suggested protocol adjustments.
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown(f"""
-        <div class="verdict-red">
-            <b>🔴 RED VERDICT</b><br>
-            Modification Rejected: This substitution may significantly degrade training stimulus for {workout['goal']}.
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Reasoning
-    st.markdown("### 🧬 RESEARCH ANALYSIS")
-    st.markdown(f"""
-    <div class="exercise-card" style="font-size:0.95rem; line-height:1.6;">
-    {result['reasoning']}
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Citations
-    with st.expander(f"📚 View {len(result['citations'])} Research Citations"):
-        for i, citation in enumerate(result['citations'], 1):
-            st.caption(f"{i}. {citation}")
-    
-    # Apply modification button (only for green/yellow)
-    if result['can_proceed']:
-        st.markdown("---")
+    # 2. DISPLAY VALIDATION RESULTS & APPLY BUTTON
+    if st.session_state.last_validation:
+        val_data = st.session_state.last_validation
+        result = val_data["result"]
+        corrected = result.get('corrected_name', val_data['replacement'])
         
-        if verdict == 'yellow' and result.get('warning'):
-            st.warning(f"⚠️ {result['warning']}")
+        # Display Verdict
+        v_color = result['verdict'].lower()
+        st.markdown(f"""
+        <div class="verdict-card verdict-{v_color}">
+            <h3 style="color:var(--resfit-orange);">{result.get('verdict_color', '⚪')} VERDICT: {result['verdict'].upper()}</h3>
+            <p style="color:white; font-weight:bold;">CONFIRMED EXERCISE: {corrected.upper()}</p>
+            <p style="color:#B0B0B0;">{result['reasoning']}</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        if st.button("✅ Apply This Modification", use_container_width=True, type="primary"):
-            with st.spinner("Applying modification..."):
-                try:
-                    api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
-                    
-                    # Apply modification
-                    apply_result = api.apply_modification(
-                        workout_id=workout['workout_id'],
-                        modification_id=result['modification_id'],
-                        original_exercise=selected_exercise,
-                        replacement_exercise=replacement,
-                        verdict=verdict,
-                        reasoning=result['reasoning'],
-                        citations=result['citations'],
-                        adjustments=result.get('adjustments', {})
-                    )
-                    
-                    # Update session state with new workout
-                    st.session_state.current_workout = apply_result['modified_workout']
-                    st.session_state.workout_history.append(apply_result['modified_workout'])
-                    
-                    # Clear validation result
-                    del st.session_state.validation_result
-                    
-                    st.success("✅ Modification applied successfully!")
-                    st.balloons()
-                    st.info("🔄 Page will refresh to show updated workout...")
-                    st.rerun()
-                    
-                except Exception as e:
-                    st.error(f"❌ Failed to apply modification: {str(e)}")
-    else:
-        st.error("❌ Cannot proceed with RED verdict modification")
-        st.info("Try a different replacement exercise")
+        if result.get('citations'):
+            with st.expander("📚 VIEW RESEARCH CITATIONS"):
+                for cite in result['citations']:
+                    st.markdown(f"- {cite}")
+        
+        if result['can_proceed']:
+            st.markdown("### STEP 3: COMMIT MODIFICATION")
+            if st.button(f"✅ APPLY {corrected.upper()} TO PROTOCOL", width="stretch"):
+                with st.spinner("💾 REGISTERING PROTOCOL CHANGE..."):
+                    try:
+                        api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
+                        # Call API to persist
+                        updated_workout = api.apply_modification(
+                            workout_id=st.session_state.workout_id,
+                            modification_id=result['modification_id'],
+                            original_exercise=val_data['original'],
+                            replacement_exercise=corrected, # USE THE CORRECTED NAME
+                            verdict=result['verdict'],
+                            reasoning=result['reasoning'],
+                            citations=result['citations'],
+                            adjustments=result.get('adjustments')
+                        )
+                        
+                        # Update local session state
+                        st.session_state.current_workout = updated_workout['modified_workout']
+                        st.session_state.workout_id = updated_workout['new_workout_id']
+                        st.session_state.last_validation = None
+                        st.success("✅ Protocol permanently updated!")
+                        st.toast("Protocol Optimized successfully!")
+                        # Stay on page or provide button to go back
+                        if st.button("👁️ VIEW UPDATED PROTOCOL"):
+                            st.switch_page("pages/1_Generate_Workout.py")
+                    except Exception as e:
+                        st.error(f"❌ FAILED TO APPLY: {str(e)}")
+        else:
+            st.error("❌ High Risk substitution detected. Please choose a different replacement.")
+            if st.button("🗑️ CLEAR VALIDATION"):
+                st.session_state.last_validation = None
+                st.rerun()
