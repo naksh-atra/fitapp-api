@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_client import FitAppAPI
-from style import apply_cult_theme, render_exercise_card, render_sidebar
+from style import apply_custom_theme, render_exercise_card, render_sidebar
 
 # Page config
 st.set_page_config(
@@ -17,8 +17,22 @@ st.set_page_config(
 if 'current_workout' not in st.session_state:
     st.session_state.current_workout = None
 
+# Ensure current workout is always in sync with latest session
+if st.session_state.get('workout_id') and st.session_state.auth_token:
+    try:
+        api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
+        # We don't have a direct 'get_workout' in Client yet, but hitting generate with same params or a dedicated getter would fix it.
+        # For now, we rely on the apply_modification response updating st.session_state.current_workout
+        pass
+    except:
+        pass
+
+# Initialize session state variables if they don't exist
+if 'current_workout' not in st.session_state:
+    st.session_state.current_workout = None
+
 # Apply the Premium ResFit aesthetic
-apply_cult_theme()
+apply_custom_theme()
 render_sidebar()
 
 # Initialize last validation state

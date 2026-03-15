@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from style import apply_cult_theme, render_sidebar, render_exercise_card
+from style import apply_custom_theme, render_sidebar, render_exercise_card
 
 # Page config
 st.set_page_config(
@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # Apply the Premium ResFit aesthetic
-apply_cult_theme()
+apply_custom_theme()
 
 # Initialize session state (MUST happen before render_sidebar)
 if 'current_workout' not in st.session_state: st.session_state.current_workout = None
@@ -36,7 +36,7 @@ with col1:
     </p>
     """, unsafe_allow_html=True)
     
-    if st.button("🚀 INITIATE VALIDATION"):
+    if st.button("🚀 GENERATE WORKOUT"):
         st.switch_page("pages/1_Generate_Workout.py")
 
 with col2:

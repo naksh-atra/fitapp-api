@@ -78,28 +78,43 @@ class WorkoutGenerator:
         
         # Compound lifts (upper + lower)
         compound_exercises = self._get_exercises_by_equipment('compound', equipment)
-        for i, exercise in enumerate(compound_exercises[:3]):  # 3 compound lifts
+        for i, name in enumerate(compound_exercises[:3]):  # 3 compound lifts
+            # Randomize rep range within bounds
+            reps_base = [6, 8] if i == 0 else [8, 10]
+            
             exercises.append({
-                'name': exercise,
+                'name': name,
                 'type': 'compound',
                 'sets': self._parse_range(compound_params['sets']),
-                'reps': self._parse_range(compound_params['reps']),
+                'reps': reps_base,
                 'tempo': compound_params['tempo'],
                 'rest_seconds': self._parse_range(compound_params['rest_seconds']),
-                'rpe': compound_params['intensity_rpe']
+                'rpe': compound_params['intensity_rpe'],
+                'pro_notes': random.choice([
+                    "Maintain spinal neutrality and brace core throughout.",
+                    "Controlled eccentric phase (3s) to enhance MTOR signaling.",
+                    "Explosive concentric phase without losing form.",
+                    "Full range of motion - reach deep lengthening phase."
+                ])
             })
         
-        # Isolation accessories
-        isolation_exercises = self._get_exercises_by_equipment('isolation', equipment)
-        for i, exercise in enumerate(isolation_exercises[:3]):  # 3 isolation
+            # Randomize rep range slightly within hypertrophy bounds (6-12)
+            reps_base = [6, 10] if i < 2 else [8, 12]
+            
             exercises.append({
-                'name': exercise,
+                'name': name,
                 'type': 'isolation',
                 'sets': self._parse_range(isolation_params['sets']),
-                'reps': self._parse_range(isolation_params['reps']),
+                'reps': reps_base,
                 'tempo': isolation_params['tempo'],
                 'rest_seconds': self._parse_range(isolation_params['rest_seconds']),
-                'rpe': isolation_params['intensity_rpe']
+                'rpe': isolation_params['intensity_rpe'],
+                'pro_notes': random.choice([
+                    "Focus on maximum peak contraction and mind-muscle connection.",
+                    "Slow eccentric (3s) to maximize mechanical tension.",
+                    "Controlled tempo with 1s hold at the peak.",
+                    "Ensure full range of motion in the lengthened position."
+                ])
             })
         
         return exercises

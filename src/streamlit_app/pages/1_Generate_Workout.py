@@ -6,7 +6,7 @@ from pathlib import Path
 # Add utils to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_client import FitAppAPI
-from style import apply_cult_theme, render_exercise_card, render_sidebar
+from style import apply_custom_theme, render_exercise_card, render_sidebar
 
 # Page config
 st.set_page_config(
@@ -16,10 +16,10 @@ st.set_page_config(
 )
 
 # Apply the Premium ResFit aesthetic
-apply_cult_theme()
+apply_custom_theme()
 render_sidebar()
 
-st.markdown("<h1 style='font-size: 3rem;'>INITIATE PROTOCOL</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size: 3rem;'>WORKOUT GENERATOR</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color:#666;'>Configure your performance targets and let the Research Engine build your validated plan.</p>", unsafe_allow_html=True)
 
 # Form Section

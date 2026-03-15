@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 
-def apply_cult_theme():
+def apply_custom_theme():
     """Injects high-end Premium 'ResFit' Design System"""
     st.markdown("""
     <style>

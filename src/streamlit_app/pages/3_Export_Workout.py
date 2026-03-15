@@ -7,9 +7,14 @@ import json
 from datetime import datetime
 import sys
 sys.path.append('..')
-from pdf_generator import FitAppPDFGenerator
+from style import apply_custom_theme, render_sidebar
+from api_client import FitAppAPI
 
-st.title("3️⃣ Export Workout")
+# Apply the Premium ResFit aesthetic
+apply_custom_theme()
+render_sidebar()
+
+st.markdown("<h1 style='font-size: 3rem;'>EXPORT & HISTORY</h1>", unsafe_allow_html=True)
 
 if not st.session_state.current_workout:
     st.warning("⚠️ No workout to export")
