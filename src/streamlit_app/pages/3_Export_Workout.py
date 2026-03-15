@@ -9,6 +9,8 @@ import sys
 sys.path.append('..')
 from style import apply_custom_theme, render_sidebar
 from api_client import FitAppAPI
+# Add utils to path (pdf_generator is in parent dir)
+from pdf_generator import FitAppPDFGenerator
 
 # Apply the Premium ResFit aesthetic
 apply_custom_theme()
