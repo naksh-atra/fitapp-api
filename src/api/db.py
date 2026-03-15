@@ -6,7 +6,7 @@ from pymongo import MongoClient
 load_dotenv(".env.local")
 
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
-MONGODB_DB  = os.getenv("MONGODB_DB")
+MONGODB_DB  = os.getenv("MONGODB_DB", "Fitapp")
 
 client = MongoClient(MONGODB_URI)
 db     = client[MONGODB_DB]
