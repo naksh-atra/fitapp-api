@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code and config
 COPY src/ ./src/
 COPY config/ ./config/
-COPY .env.local ./.env.local
+# COPY .env.local ./.env.local #to be handled by railway
 
 # Set environment variables
 ENV PYTHONPATH=/app/src
