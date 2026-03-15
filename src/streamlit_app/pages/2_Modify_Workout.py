@@ -13,6 +13,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# Initialize session state variables if they don't exist
+if 'current_workout' not in st.session_state:
+    st.session_state.current_workout = None
+
 # Apply the Premium ResFit aesthetic
 apply_cult_theme()
 render_sidebar()
