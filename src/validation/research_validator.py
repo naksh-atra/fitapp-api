@@ -51,9 +51,8 @@ class ResearchValidator:
                         "content": prompt
                     }
                 ],
-                "temperature": 0.2,  # Low temp for consistency
-                "return_citations": True,
-                "search_recency_filter": "year"  # Only recent research
+                "temperature": 0.2,
+                "return_citations": True
             }
         )
 
@@ -114,10 +113,18 @@ class ResearchValidator:
         its own boundary for test compatibility.
         """
         try:
-            content = response_data['choices'][0]['message']['content']
+            # Flexible parsing: Check 'choices' (Standard) or 'output' (Some Perplexity models)
+            if 'choices' in response_data:
+                content = response_data['choices'][0]['message']['content']
+            elif 'output' in response_data:
+                content = response_data['output'][0]['message']['content']
+            else:
+                # If neither is found, it's likely an error message
+                error_msg = response_data.get('error', {}).get('message', 'Unknown API Error')
+                raise KeyError(f"API Error/Missing Content: {error_msg}")
         except (KeyError, IndexError, TypeError) as e:
             print(f"❌ Failed to parse Perplexity response! {e}")
-            print(f"Response data: {response_data}")
+            print(f"Raw Response: {response_data}")
             raise Exception(f"Invalid research API response structure: {str(e)}")
         citations = response_data.get('citations', [])
 
