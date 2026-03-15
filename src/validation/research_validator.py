@@ -17,7 +17,7 @@ class ResearchValidator:
     def __init__(self):
         self.api_key = os.getenv("PERPLEXITY_API_KEY")
         self.base_url = "https://api.perplexity.ai/chat/completions"
-        self.model = os.getenv("MODEL")
+        self.model = os.getenv("MODEL", "sonar-reasoning")  # Default if env var missing
 
     def validate_exercise_swap(
         self,
@@ -57,6 +57,17 @@ class ResearchValidator:
             }
         )
 
+        print(f"DEBUG: Perplexity API Status: {response.status_code}")
+        if response.status_code != 200:
+            print(f"❌ Perplexity API Error: {response.text}")
+            return {
+                "verdict": "red",
+                "corrected_name": None,
+                "reasoning": f"Research API Error ({response.status_code}): {response.text}",
+                "citations": [],
+                "timestamp": None
+            }
+            
         return self._parse_api_response(response.json())
 
     def _build_validation_prompt(self, original, replacement, reason, goal):
@@ -102,7 +113,12 @@ class ResearchValidator:
         without any changes.  The /validate_swap endpoint uppercases at
         its own boundary for test compatibility.
         """
-        content = response_data['choices'][0]['message']['content']
+        try:
+            content = response_data['choices'][0]['message']['content']
+        except (KeyError, IndexError, TypeError) as e:
+            print(f"❌ Failed to parse Perplexity response! {e}")
+            print(f"Response data: {response_data}")
+            raise Exception(f"Invalid research API response structure: {str(e)}")
         citations = response_data.get('citations', [])
 
         # Extract Canonical Name
