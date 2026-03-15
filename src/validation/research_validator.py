@@ -37,7 +37,9 @@ class ResearchValidator:
             self.base_url,
             headers={
                 "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": "ResFit-Research-Engine/1.0"
             },
             json={
                 "model": self.model,
@@ -53,8 +55,11 @@ class ResearchValidator:
                 ],
                 "temperature": 0.2,
                 "return_citations": True
-            }
+            },
+            timeout=60  # Perplexity research can take time
         )
+        
+        response.raise_for_status()
 
         print(f"DEBUG: Perplexity API Status: {response.status_code}")
         if response.status_code != 200:

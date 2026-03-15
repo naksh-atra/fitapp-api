@@ -9,8 +9,16 @@ MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 MONGODB_DB  = os.getenv("MONGODB_DB", "Fitapp")
 
 try:
-    # Use a short timeout for the demo so startup isn't blocked too long
-    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+    # Production-hardened connection settings
+    client = MongoClient(
+        MONGODB_URI, 
+        serverSelectionTimeoutMS=30000,
+        connectTimeoutMS=20000,
+        socketTimeoutMS=20000,
+        heartbeatFrequencyMS=10000,
+        maxPoolSize=10,
+        retryWrites=True
+    )
     db     = client[MONGODB_DB]
     workouts_col         = db["workouts"]
     validation_cache_col = db["validation_cache"]
