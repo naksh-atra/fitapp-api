@@ -58,3 +58,4 @@ tzdata==2025.3
 urllib3==2.6.3
 uvicorn==0.40.0
 watchdog==6.0.0
+tavily-python==0.5.0
