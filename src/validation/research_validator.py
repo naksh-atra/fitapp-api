@@ -17,7 +17,7 @@ class ResearchValidator:
     def __init__(self):
         self.api_key = os.getenv("PERPLEXITY_API_KEY")
         self.base_url = "https://api.perplexity.ai/chat/completions"
-        self.model = os.getenv("MODEL", "sonar-reasoning")  # Default if env var missing
+        self.model = os.getenv("MODEL", "sonar") # Use 'sonar' as standard online model
 
     def validate_exercise_swap(
         self,
@@ -32,8 +32,36 @@ class ResearchValidator:
         """
 
         prompt = self._build_validation_prompt(original, replacement, reason, goal)
+        system_instructions = "You are a research validator for exercise prescription. Evaluate exercise substitutions based on peer-reviewed evidence from 2023-2025. Return verdicts as GREEN (equivalent/valid), YELLOW (suboptimal but acceptable), or RED (not recommended)."
 
-        response = requests.post(
+        # Try standard approach
+        messages = [
+            {"role": "system", "content": system_instructions},
+            {"role": "user", "content": prompt}
+        ]
+
+        try:
+            response = self._call_perplexity_api(messages)
+            
+            # If 400 because of 'system' role, retry with merged user message
+            if response.status_code == 400 and "system" in response.text.lower():
+                print("⚠️ Retrying without system role...")
+                merged_prompt = f"{system_instructions}\n\n{prompt}"
+                response = self._call_perplexity_api([{"role": "user", "content": merged_prompt}])
+
+            print(f"DEBUG: Perplexity API Status: {response.status_code}")
+            if response.status_code != 200:
+                print(f"❌ Perplexity API ERROR DETAIL: {response.text}")
+                return self._error_fallback(f"API Error ({response.status_code}): {response.text}")
+
+            return self._parse_api_response(response.json())
+
+        except Exception as e:
+            print(f"❌ Research Validator Crash: {e}")
+            return self._error_fallback(str(e))
+
+    def _call_perplexity_api(self, messages):
+        return requests.post(
             self.base_url,
             headers={
                 "Authorization": f"Bearer {self.api_key}",
@@ -43,36 +71,21 @@ class ResearchValidator:
             },
             json={
                 "model": self.model,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are a research validator for exercise prescription. Evaluate exercise substitutions based on peer-reviewed evidence from 2023-2025. Return verdicts as GREEN (equivalent/valid), YELLOW (suboptimal but acceptable), or RED (not recommended)."
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
+                "messages": messages,
                 "temperature": 0.2,
                 "return_citations": True
             },
-            timeout=60  # Perplexity research can take time
+            timeout=60
         )
-        
-        response.raise_for_status()
 
-        print(f"DEBUG: Perplexity API Status: {response.status_code}")
-        if response.status_code != 200:
-            print(f"❌ Perplexity API Error: {response.text}")
-            return {
-                "verdict": "red",
-                "corrected_name": None,
-                "reasoning": f"Research API Error ({response.status_code}): {response.text}",
-                "citations": [],
-                "timestamp": None
-            }
-            
-        return self._parse_api_response(response.json())
+    def _error_fallback(self, error_str: str) -> Dict:
+        return {
+            "verdict": "red",
+            "corrected_name": None,
+            "reasoning": f"Validation system Error: {error_str}",
+            "citations": [],
+            "timestamp": None
+        }
 
     def _build_validation_prompt(self, original, replacement, reason, goal):
         goal_context = self.SUBSTITUTION_CONTEXT.get(goal, self.SUBSTITUTION_CONTEXT["hypertrophy"])
@@ -84,69 +97,43 @@ class ResearchValidator:
         REASON: {reason}
 
         INSTRUCTION:
-        1. If the PROPOSED REPLACEMENT is a specific exercise, evaluate its biomechanical equivalence and effectiveness.
-        2. If the PROPOSED REPLACEMENT is a constraint (e.g., 'no kettlebells', 'something at home', 'easier version') or is vague, use your research knowledge to SUGGEST the single best Canonical Replacement that aligns with the original goal and honors the constraint.
+        1. Evaluate biomechanical equivalence and effectiveness.
+        2. Analyze muscle activation (cite research 2023-2025).
+        3. Recommend a CANONICAL NAME if the input is vague.
 
-        Analyze:
-        1. Muscle activation comparison (primary & secondary muscles)
-        2. Biomechanical equivalence
-        3. Effectiveness for {goal} (cite specific studies from 2023-2025)
-        4. Safety considerations for reason: {reason}
-        5. Required adjustments (sets/reps/tempo) if accepted
-
-        Return verdict as:
-        - GREEN if equivalent or superior
-        - YELLOW if 70-90% as effective with adjustments
-        - RED if <70% effective or unsafe
-
-        Format your response exactly as follows at the VERY START:
-        CANONICAL NAME: [Exact Name of Suggested Replacement Exercise]
+        Format response:
+        CANONICAL NAME: [Name]
         VERDICT: [GREEN/YELLOW/RED]
         PERCENTAGE: [XX]%
 
-        Then provide detailed analysis and citations.
-        
-        Verdict criteria for {goal}: {goal_context}
+        Analysis: [Details...]
+
+        Criteria for {goal}: {goal_context}
         """
 
     def _parse_api_response(self, response_data: Dict) -> Dict:
-        """
-        Parse Perplexity API response into structured verdict.
-        Verdict is returned in lowercase (green / yellow / red) so the
-        existing /validate_modification endpoint and Streamlit page work
-        without any changes.  The /validate_swap endpoint uppercases at
-        its own boundary for test compatibility.
-        """
         try:
-            # Flexible parsing: Check 'choices' (Standard) or 'output' (Some Perplexity models)
             if 'choices' in response_data:
                 content = response_data['choices'][0]['message']['content']
             elif 'output' in response_data:
                 content = response_data['output'][0]['message']['content']
             else:
-                # If neither is found, it's likely an error message
                 error_msg = response_data.get('error', {}).get('message', 'Unknown API Error')
-                raise KeyError(f"API Error/Missing Content: {error_msg}")
+                raise KeyError(f"API Error: {error_msg}")
         except (KeyError, IndexError, TypeError) as e:
-            print(f"❌ Failed to parse Perplexity response! {e}")
-            print(f"Raw Response: {response_data}")
-            raise Exception(f"Invalid research API response structure: {str(e)}")
-        citations = response_data.get('citations', [])
+            print(f"❌ Parse Error: {e} - Data: {response_data}")
+            raise Exception(f"Invalid API response: {str(e)}")
 
-        # Extract Canonical Name
+        citations = response_data.get('citations', [])
         canonical_match = re.search(r"CANONICAL NAME:\s*(.*)", content, re.IGNORECASE)
         corrected_name = canonical_match.group(1).strip() if canonical_match else None
 
-        # Detect verdict (case-insensitive search, return lowercase)
+        # Detect verdict
         content_upper = content.upper()
-        if "GREEN" in content_upper:
-            verdict = "green"
-        elif "YELLOW" in content_upper:
-            verdict = "yellow"
-        elif "RED" in content_upper:
-            verdict = "red"
-        else:
-            verdict = "yellow"  # Default to caution
+        if "GREEN" in content_upper: verdict = "green"
+        elif "YELLOW" in content_upper: verdict = "yellow"
+        elif "RED" in content_upper: verdict = "red"
+        else: verdict = "yellow"
 
         return {
             "verdict": verdict,
@@ -155,4 +142,3 @@ class ResearchValidator:
             "citations": citations,
             "timestamp": response_data.get('created')
         }
-
