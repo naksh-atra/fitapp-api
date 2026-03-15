@@ -40,7 +40,10 @@ except ImportError as e:
     ValidationCache    = None
     PrescriptionValidator = None
 
-from repositories import save_workout, get_workout, list_workouts                        # CHANGED
+from repositories import (
+    save_workout, get_workout, list_workouts, 
+    get_cached_validation, save_cached_validation
+)
 
 app = FastAPI(
     title="Science Based Workout Generator API",
@@ -215,11 +218,20 @@ async def validate_modification(request: ModificationRequest):
     if request.workout_id not in workout_sessions:
         raise HTTPException(status_code=404, detail=f"Workout ID '{request.workout_id}' not found. Generate a workout first.")
 
-    cached = cache.get_cached_validation(
-        request.original_exercise, request.replacement_exercise,
-        request.reason, request.goal
-    ) if cache else None
-
+    # 1. Check MongoDB Cache first
+    import hashlib
+    components = f"{request.original_exercise}|{request.replacement_exercise}|{request.reason}|{request.goal}".lower()
+    m_cache_key = hashlib.md5(components.encode()).hexdigest()
+    
+    cached = get_cached_validation(m_cache_key)
+    
+    # 2. Fallback to File Cache
+    if not cached and cache:
+        cached = cache.get_cached_validation(
+            request.original_exercise, request.replacement_exercise,
+            request.reason, request.goal
+        )
+    
     if cached:
         modification_id = f"mod_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         return {
@@ -248,6 +260,18 @@ async def validate_modification(request: ModificationRequest):
                 request.original_exercise, request.replacement_exercise,
                 request.reason, request.goal, result
             )
+        
+        # Save to MongoDB Cache
+        save_cached_validation(
+            cache_key=m_cache_key,
+            meta={
+                "original": request.original_exercise,
+                "replacement": request.replacement_exercise,
+                "reason": request.reason,
+                "goal": request.goal
+            },
+            validation_result=result
+        )
 
         modification_id = f"mod_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 

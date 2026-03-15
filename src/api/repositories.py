@@ -12,6 +12,7 @@ def save_workout(user_id: str, workout_id: str, request_payload: Dict, data: Dic
         "data":            data,
         "updated_at":      now,
     }
+    if workouts_col is None: return
     workouts_col.update_one(
         {"workout_id": workout_id, "user_id": user_id},
         {"$setOnInsert": {"created_at": now}, "$set": doc},
@@ -20,16 +21,19 @@ def save_workout(user_id: str, workout_id: str, request_payload: Dict, data: Dic
 
 
 def get_workout(user_id: str, workout_id: str) -> Optional[Dict]:
+    if workouts_col is None: return None
     doc = workouts_col.find_one({"workout_id": workout_id, "user_id": user_id})
     return doc["data"] if doc else None
 
 
 def get_cached_validation(cache_key: str) -> Optional[Dict]:
+    if validation_cache_col is None: return None
     doc = validation_cache_col.find_one({"cache_key": cache_key})
     return doc["validation_result"] if doc else None
 
 
 def save_cached_validation(cache_key: str, meta: Dict, validation_result: Dict) -> None:
+    if validation_cache_col is None: return
     now = datetime.utcnow().isoformat()
     validation_cache_col.update_one(
         {"cache_key": cache_key},
@@ -46,7 +50,8 @@ def save_cached_validation(cache_key: str, meta: Dict, validation_result: Dict) 
 
 
 def list_workouts(user_id: str, limit: int = 50) -> list:
-    """List user's workout history from MongoDB."""
+    if workouts_col is None: return []
+    # List user's workout history from MongoDB.
     pipeline = [
         {"$match": {"user_id": user_id}},
         {"$sort": {"created_at": -1}},

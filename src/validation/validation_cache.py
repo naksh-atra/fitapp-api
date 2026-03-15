@@ -8,7 +8,7 @@ from typing import Dict, Optional
 class ValidationCache:
     def __init__(self, cache_dir: str = "data/validation_cache"):
         self.cache_dir = Path(cache_dir)
-        self.cache_dir.mkdir(exist_ok=True)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.ttl_days = 30  # Cache research validations for 30 days
     
     def get_cached_validation(self, original: str, replacement: str, reason: str, goal: str):
