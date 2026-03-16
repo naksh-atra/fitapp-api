@@ -170,7 +170,7 @@ def render_sidebar():
                 # Simple JWT for demo - MUST MATCH BACKEND SECRET
                 secret = os.getenv("JWT_SECRET", "devsecretapplepie")
                 expire = datetime.utcnow() + timedelta(hours=1)
-                token = jwt.encode({"sub": "cult-demo", "exp": expire}, secret, algorithm="HS256")
+                token = jwt.encode({"sub": "resfit-demo", "exp": expire}, secret, algorithm="HS256")
                 st.session_state.auth_token = token
                 st.rerun()
         else:

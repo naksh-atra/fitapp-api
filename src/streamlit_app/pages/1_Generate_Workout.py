@@ -10,7 +10,7 @@ from style import apply_custom_theme, render_exercise_card, render_sidebar
 
 # Page config
 st.set_page_config(
-    page_title="ResFit | Generate Performance",
+    page_title="ResFit | Workout Generator",
     page_icon="⚡",
     layout="wide"
 )
@@ -52,7 +52,7 @@ if submitted:
     if not st.session_state.auth_token:
         st.error("🔑 Demo Token Required. Please activate it in the sidebar.")
     else:
-        with st.spinner("🚀 CROSS-REFERENCING RESEARCH DATABASES..."):
+        with st.spinner("🚀 ANALYZING RESEARCH DATA..."):
             try:
                 api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
                 result = api.generate_workout(
@@ -64,11 +64,11 @@ if submitted:
                 # Store in session state
                 st.session_state.current_workout = result['data']
                 st.session_state.workout_id = result['workout_id']
-                st.success(f"Protocol Generated: {result['workout_id']}")
+                st.success(f"Workout Generated: {result['workout_id']}")
                 st.rerun()
                 
             except Exception as e:
-                st.error(f"❌ COMPUTE ERROR: {str(e)}")
+                st.error(f"❌ SYSTEM ERROR: {str(e)}")
 
 # Display Workout
 if st.session_state.current_workout:
@@ -96,7 +96,7 @@ if st.session_state.current_workout:
     st.markdown("---")
     colA, colB = st.columns([1, 1])
     with colA:
-        if st.button("🔄 RE-GENERATE PROTOCOL", width="stretch"):
+        if st.button("🔄 RE-GENERATE WORKOUT", width="stretch"):
             st.session_state.current_workout = None
             st.rerun()
     with colB:

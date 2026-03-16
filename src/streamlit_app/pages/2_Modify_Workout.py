@@ -8,7 +8,7 @@ from style import apply_custom_theme, render_exercise_card, render_sidebar
 
 # Page config
 st.set_page_config(
-    page_title="ResFit | Protocol Optimization",
+    page_title="ResFit | Workout Modification",
     page_icon="⚖️",
     layout="wide"
 )
@@ -39,13 +39,13 @@ render_sidebar()
 if 'last_validation' not in st.session_state:
     st.session_state.last_validation = None
 
-st.markdown("<h1 style='font-size: 3rem;'>PROTOCOL OPTIMIZATION</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size: 3rem;'>WORKOUT MODIFICATION</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color:#666;'>Swap exercises while maintaining physiological target through Research Validation.</p>", unsafe_allow_html=True)
 
 if not st.session_state.current_workout:
     st.markdown("""
     <div class="premium-card" style="text-align:center; padding: 3rem;">
-        <h3 style="color:#666;">NO ACTIVE PROTOCOL FOUND</h3>
+        <h3 style="color:#666;">NO ACTIVE WORKOUT FOUND</h3>
         <p>Please generate a performance plan first.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -73,7 +73,7 @@ else:
 
     # 1. HANDLE VALIDATION
     if validate_button:
-        with st.spinner("🔍 SCANNING MEDICAL RCTs & META-ANALYSES..."):
+        with st.spinner("🔍 ANALYZING RESEARCH DATA..."):
             try:
                 api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
                 result = api.validate_modification(
@@ -138,11 +138,8 @@ else:
                         st.session_state.current_workout = updated_workout['modified_workout']
                         st.session_state.workout_id = updated_workout['new_workout_id']
                         st.session_state.last_validation = None
-                        st.success("✅ Protocol permanently updated!")
-                        st.toast("Protocol Optimized successfully!")
-                        # Stay on page or provide button to go back
-                        if st.button("👁️ VIEW UPDATED PROTOCOL"):
-                            st.switch_page("pages/1_Generate_Workout.py")
+                        st.session_state.modification_applied = True
+                        st.rerun()
                     except Exception as e:
                         st.error(f"❌ FAILED TO APPLY: {str(e)}")
         else:
@@ -150,3 +147,15 @@ else:
             if st.button("🗑️ CLEAR VALIDATION"):
                 st.session_state.last_validation = None
                 st.rerun()
+
+    # 3. SUCCESS REDIRECT (Shows after applying)
+    if st.session_state.get('modification_applied'):
+        st.success("✅ Workout permanently updated!")
+        st.toast("Workout Optimized successfully!")
+        if st.button("👁️ VIEW UPDATED WORKOUT", width="stretch"):
+            st.session_state.modification_applied = False
+            st.switch_page("pages/1_Generate_Workout.py")
+        
+        if st.button("🔄 MODIFY ANOTHER EXERCISE"):
+            st.session_state.modification_applied = False
+            st.rerun()

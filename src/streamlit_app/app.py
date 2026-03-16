@@ -66,7 +66,7 @@ with f2:
 with f3:
     st.markdown("""
     <div class="premium-card">
-        <h3 style="color:#FF5722;">🏛️ CULT FIT DNA</h3>
+        <h3 style="color:#FF5722;">🏛️ MOBILE APP FRIENDLY</h3>
         <p style="color:#888; font-size: 0.9rem;">Engineered for mobile-first performance. Premium aesthetics for professional coaches.</p>
     </div>
     """, unsafe_allow_html=True)
