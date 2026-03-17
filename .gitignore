@@ -45,3 +45,8 @@ data/validation_cache/*.json
 # But keep folder structure
 !data/
 !data/**/
+
+prompt_instructions.txt
+run_combos.py
+combos.txt
+text.txt

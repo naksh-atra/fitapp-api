@@ -190,35 +190,129 @@ def render_sidebar():
         except:
             st.markdown("<p style='color:#FF1744; font-size:0.8rem;'>● API OFFLINE</p>", unsafe_allow_html=True)
 
-def render_exercise_card(ex):
-    """Renders a single exercise using the high-end Premium Card style"""
-    sets = f"{ex['sets'][0]}-{ex['sets'][1]}" if isinstance(ex['sets'], list) else ex['sets']
-    reps = f"{ex['reps'][0]}-{ex['reps'][1]}" if isinstance(ex['reps'], list) else ex['reps']
-    
-    # Handle possible nested list for rest_seconds
-    if isinstance(ex['rest_seconds'], list):
-        rest = f"{ex['rest_seconds'][0]}-{ex['rest_seconds'][1]}s"
-    else:
-        rest = f"{ex['rest_seconds']}s"
-    
-    # Research tag if modified
-    validation_tag = ""
-    if ex.get('modified_by_research'):
-        validation_tag = '<span style="float:right; font-size:0.7rem; color:#00FF88; border:1px solid #00FF88; padding:2px 8px; border-radius:10px;">VALIDATED</span>'
+def _fmt(val, suffix=""):
+    """Format a scalar or [low, high] list into a display string."""
+    if isinstance(val, list) and len(val) == 2:
+        if val[0] == val[1]:
+            return f"{val[0]}{suffix}"
+        return f"{val[0]}-{val[1]}{suffix}"
+    return f"{val}{suffix}" if val is not None else "—"
 
-    # NO INDENTATION in the following string to prevent markdown code blocks
+
+def render_session_card(ex):
+    """
+    Renders one item from a session's exercises list.
+    Handles 4 distinct shapes:
+      1. compound / isolation  (hypertrophy / strength)
+      2. cardio_aerobic / cardio_vo2max  (endurance — duration-based, no sets/reps)
+      3. hiit_circuit / cardio_threshold  (circuit with stations[])
+      4. cardio_steady_state  (fatloss steady state — duration-based)
+    """
+    ex_type = ex.get("type", "")
+    name    = ex.get("name", "Exercise")
+    modified_tag = ""
+    if ex.get("modified"):
+        modified_tag = '<span style="float:right; font-size:0.7rem; color:#00FF88; border:1px solid #00FF88; padding:2px 8px; border-radius:10px;">MODIFIED</span>'
+
+    # ── CIRCUIT (HIIT / threshold) ────────────────────────────────────────────
+    if "stations" in ex:
+        rounds   = _fmt(ex.get("circuit_rounds"))
+        intensity = ex.get("intensity", "")
+        rpe      = ex.get("rpe", "")
+        notes    = ex.get("pro_notes", "")
+        load     = ex.get("load_constraint", "")
+
+        stations_html = ""
+        for st_item in ex.get("stations", []):
+            sname    = st_item.get("name") or st_item.get("exercise", "?")
+            work     = _fmt(st_item.get("work_seconds"), "s")
+            rest     = _fmt(st_item.get("rest_seconds"), "s")
+            reps_s   = _fmt(st_item.get("reps")) if st_item.get("reps") else ""
+            dur_s    = _fmt(st_item.get("duration_seconds"), "s") if st_item.get("duration_seconds") else ""
+            detail   = work if work != "—" else dur_s
+            stations_html += f"""
+<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+  <span style="color:#fff; font-weight:600;">{sname.upper()}</span>
+  <span style="color:#888; font-size:0.85rem;">
+    {"Work: " + detail + " &nbsp;|&nbsp; " if detail and detail != "—" else ""}
+    {"Rest: " + rest + " &nbsp;|&nbsp; " if rest and rest != "—" else ""}
+    {"Reps: " + reps_s if reps_s and reps_s != "—" else ""}
+  </span>
+</div>"""
+
+        html = f"""<div class="premium-card">
+{modified_tag}
+<h3 style="margin-top:0; font-size:1.3rem; margin-bottom:0.3rem; color:white;">{name.upper()} <span style="font-size:0.8rem; color:#FF5722;">CIRCUIT</span></h3>
+<div style="margin-bottom:0.8rem;">
+  <span class="stat-chip"><b>ROUNDS:</b> {rounds}</span>
+  {"<span class='stat-chip'><b>INTENSITY:</b> " + intensity + "</span>" if intensity else ""}
+  {"<span class='stat-chip'><b>RPE:</b> " + rpe + "</span>" if rpe else ""}
+  {"<span class='stat-chip'><b>LOAD:</b> " + load + "</span>" if load else ""}
+</div>
+<div style="margin-bottom:0.8rem;">{stations_html}</div>
+{"<div style='background:rgba(255,87,34,0.1); padding:8px 12px; border-radius:10px; border-left:3px solid var(--resfit-orange);'><p style='color:#FFCCBC; font-size:0.8rem; margin:0;'><i>" + notes + "</i></p></div>" if notes else ""}
+</div>"""
+        st.markdown(html, unsafe_allow_html=True)
+        return
+
+    # ── CARDIO (duration-based — endurance zone2/vo2max, fatloss steady) ──────
+    if ex_type in ("cardio_aerobic", "cardio_steady_state", "cardio_vo2max"):
+        duration  = _fmt(ex.get("duration_minutes"), " min")
+        intensity = ex.get("intensity", "")
+        zone      = ex.get("intensity_zone", "")
+        rpe       = ex.get("rpe", "")
+        notes     = ex.get("pro_notes", "")
+        # VO2max interval shape
+        if ex_type == "cardio_vo2max" and ex.get("intervals"):
+            intervals = ex.get("intervals")
+            dur_i     = ex.get("interval_duration_min")
+            rest_i    = ex.get("rest_between_intervals_min")
+            detail_chip = f'<span class="stat-chip"><b>INTERVALS:</b> {intervals}×{dur_i} min</span>'
+            rest_chip   = f'<span class="stat-chip"><b>REST:</b> {rest_i} min</span>' if rest_i else ""
+        else:
+            detail_chip = f'<span class="stat-chip"><b>DURATION:</b> {duration}</span>'
+            rest_chip   = ""
+
+        html = f"""<div class="premium-card">
+{modified_tag}
+<h3 style="margin-top:0; font-size:1.3rem; margin-bottom:0.3rem; color:white;">{name.upper()}</h3>
+<div style="margin-bottom:0.8rem;">
+  {detail_chip}
+  {rest_chip}
+  {"<span class='stat-chip'><b>INTENSITY:</b> " + intensity + "</span>" if intensity else ""}
+  {"<span class='stat-chip'><b>ZONE:</b> " + zone + "</span>" if zone else ""}
+  {"<span class='stat-chip'><b>RPE:</b> " + rpe + "</span>" if rpe else ""}
+</div>
+{"<div style='background:rgba(255,87,34,0.1); padding:8px 12px; border-radius:10px; border-left:3px solid var(--resfit-orange);'><p style='color:#FFCCBC; font-size:0.8rem; margin:0;'><i>" + notes + "</i></p></div>" if notes else ""}
+</div>"""
+        st.markdown(html, unsafe_allow_html=True)
+        return
+
+    # ── STRENGTH / HYPERTROPHY (sets × reps) ──────────────────────────────────
+    sets    = _fmt(ex.get("sets"))
+    reps    = _fmt(ex.get("reps"))
+    rest    = _fmt(ex.get("rest_seconds"), "s")
+    rpe     = ex.get("rpe", "—")
+    tempo   = ex.get("tempo", "")
+    pct_1rm = ex.get("percent_1rm", "")
+    notes   = ex.get("pro_notes", "")
+
     html = f"""<div class="premium-card">
-{validation_tag}
-<h3 style="margin-top:0; font-size:1.3rem; margin-bottom:0.5rem; color:white;">{ex['name'].upper()}</h3>
+{modified_tag}
+<h3 style="margin-top:0; font-size:1.3rem; margin-bottom:0.5rem; color:white;">{name.upper()}</h3>
 <div style="margin-bottom:1rem;">
-<span class="stat-chip"><b>SETS:</b> {sets}</span>
-<span class="stat-chip"><b>REPS:</b> {reps}</span>
-<span class="stat-chip"><b>REST:</b> {rest}</span>
-<span class="stat-chip"><b>RPE:</b> {ex.get('rpe', '7-8')}</span>
+  <span class="stat-chip"><b>SETS:</b> {sets}</span>
+  <span class="stat-chip"><b>REPS:</b> {reps}</span>
+  <span class="stat-chip"><b>REST:</b> {rest}</span>
+  <span class="stat-chip"><b>RPE:</b> {rpe}</span>
+  {"<span class='stat-chip'><b>1RM:</b> " + pct_1rm + "</span>" if pct_1rm else ""}
 </div>
-<p style="color:#b3b3b3; font-size:0.9rem; margin-bottom:0.5rem;"><b>Tempo:</b> {ex.get('tempo', '2-0-1-0')}</p>
-<div style="background:rgba(255,87,34,0.1); padding:8px 12px; border-radius:10px; border-left:3px solid var(--resfit-orange);">
-<p style="color:#FFCCBC; font-size:0.8rem; margin:0;"><i>{ex.get('pro_notes', 'Focus on explosive concentric phase and controlled eccentric.')}</i></p>
-</div>
+{"<p style='color:#b3b3b3; font-size:0.9rem; margin-bottom:0.5rem;'><b>Tempo:</b> " + tempo + "</p>" if tempo else ""}
+{"<div style='background:rgba(255,87,34,0.1); padding:8px 12px; border-radius:10px; border-left:3px solid var(--resfit-orange);'><p style='color:#FFCCBC; font-size:0.8rem; margin:0;'><i>" + notes + "</i></p></div>" if notes else ""}
 </div>"""
     st.markdown(html, unsafe_allow_html=True)
+
+
+def render_exercise_card(ex):
+    """Backward-compat alias — routes to render_session_card."""
+    render_session_card(ex)

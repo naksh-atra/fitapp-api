@@ -125,10 +125,10 @@ strength:
     
     parameters:
       sets: "3-4 per exercise"
-      reps: "6-10 (or 4-8 for heavy accessories)"
-      weight_1rm_percent: "70-80% 1RM"
-      intensity_rpe: "7-8"
-      intensity_rir: "2-3 RIR"
+      reps: "3-6"
+      weight_1rm_percent: "80-87% 1RM"
+      intensity_rpe: "8-9"
+      intensity_rir: "1-2 RIR"
       rest_seconds: "120-180"  # 2-3 minutes
       weekly_volume_sets: "3-6 per movement pattern"
     
