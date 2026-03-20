@@ -116,7 +116,7 @@ if st.session_state.current_workout:
 
     # ── Actions ───────────────────────────────────────────────────────────────
     st.markdown("---")
-    colA, colB = st.columns(2)
+    colA, colB, colC = st.columns(3)
     with colA:
         if st.button("🔄 RE-GENERATE PLAN", use_container_width=True):
             st.session_state.current_workout = None
@@ -124,3 +124,6 @@ if st.session_state.current_workout:
     with colB:
         if st.button("✏️ MODIFY AN EXERCISE", use_container_width=True):
             st.switch_page("pages/2_Modify_Workout.py")
+    with colC:
+        if st.button("📥 EXPORT WORKOUT", use_container_width=True):
+            st.switch_page("pages/3_Export_Workout.py")
