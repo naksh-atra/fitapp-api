@@ -47,15 +47,9 @@ from repositories import (
     save_cached_validation as db_save_cache
 )
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
-    title="Science Based Workout Generator API",
-    description=(
-        "Science-based weekly workout planner with research-validated prescriptions.\n\n"
-        "4 goals: hypertrophy, strength, endurance, fatloss\n"
-        "Returns a full Monday–Sunday weekly plan per request."
-    ),
-    version="2.0.0",
-    docs_url="/docs",
     redoc_url="/redoc"
 )
 
