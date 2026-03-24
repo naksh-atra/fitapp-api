@@ -71,11 +71,33 @@ if st.session_state.current_workout:
     st.markdown("---")
 
     # ── Metadata row ─────────────────────────────────────────────────────────
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Goal",       workout.get("goal", "-").upper())
-    m2.metric("Split",      workout.get("split_type", "-"))
-    m3.metric("Days / Week", workout.get("training_days_per_week", "-"))
-    m4.metric("Evidence",   workout.get("evidence_level", "HIGH"))
+    goal_label = workout.get("goal", "-").upper()
+    split_text = workout.get("split_type", "-")
+    days_text  = str(workout.get("training_days_per_week", "-"))
+    evidence   = workout.get("evidence_level", "HIGH")
+
+    st.markdown(f"""
+<div style="display:flex; gap:1rem; background:rgba(255,255,255,0.03);
+     border:1px solid rgba(255,255,255,0.08); border-radius:16px;
+     padding:1rem 1.5rem; margin-bottom:1rem;">
+    <div style="flex:1; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">GOAL</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{goal_label}</div>
+    </div>
+    <div style="flex:1.5; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">SPLIT</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{split_text}</div>
+    </div>
+    <div style="flex:1; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">DAYS / WEEK</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{days_text}</div>
+    </div>
+    <div style="flex:1; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">EVIDENCE</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{evidence}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     # ── Dietary disclaimer (fat loss only) ───────────────────────────────────
     if workout.get("dietary_disclaimer"):
