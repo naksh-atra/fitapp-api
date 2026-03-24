@@ -126,23 +126,22 @@ with col1:
 with col2:
     st.markdown("### PDF Format")
     st.caption("Human-readable weekly plan - Monday to Sunday table")
-    st.markdown('<div class="pdf-download">', unsafe_allow_html=True)
-    try:
-        pdf_gen  = FitAppPDFGenerator()
-        pdf_data = pdf_gen.generate(workout)
-        filename = f"ResFit_Plan_{workout.get('workout_id','plan')}_{datetime.now().strftime('%Y%m%d')}.pdf"
-        st.download_button(
-            label="📥 Download PDF",
-            data=pdf_data,
-            file_name=filename,
-            mime="application/pdf",
-            use_container_width=True,
-            key="pdf_download"
-        )
-    except Exception as e:
-        st.error(f"❌ PDF generation failed: {str(e)}")
-        st.info("Try JSON export instead")
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(key="pdf-export"):
+        try:
+            pdf_gen  = FitAppPDFGenerator()
+            pdf_data = pdf_gen.generate(workout)
+            filename = f"ResFit_Plan_{workout.get('workout_id','plan')}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            st.download_button(
+                label="📥 Download PDF",
+                data=pdf_data,
+                file_name=filename,
+                mime="application/pdf",
+                use_container_width=True,
+                key="pdf_download"
+            )
+        except Exception as e:
+            st.error(f"❌ PDF generation failed: {str(e)}")
+            st.info("Try JSON export instead")
 
 # ── Raw preview ───────────────────────────────────────────────────────────────
 st.markdown("---")

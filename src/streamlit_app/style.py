@@ -104,9 +104,28 @@ def apply_custom_theme():
         box-shadow: 0 8px 25px rgba(255, 87, 34, 0.5) !important;
     }
 
-    /* Orange PDF download button (scoped to .pdf-download wrapper) */
-    .pdf-download div.stDownloadButton > button {
-        background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
+    /* Default download button (JSON) — not orange */
+    div.stDownloadButton > button {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        width: 100%;
+        transition: all 0.3s ease !important;
+    }
+
+    div.stDownloadButton > button:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+        transform: scale(1.02) !important;
+    }
+
+    /* Orange PDF download button (scoped to .pdf-export container) */
+    #pdf-export div.stDownloadButton > button {
+        background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%) !important;
         color: white !important;
         border: none !important;
         border-radius: 12px !important;
@@ -119,7 +138,7 @@ def apply_custom_theme():
         box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3) !important;
     }
 
-    .pdf-download div.stDownloadButton > button:hover {
+    #pdf-export div.stDownloadButton > button:hover {
         transform: scale(1.02) !important;
         box-shadow: 0 8px 25px rgba(255, 87, 34, 0.5) !important;
     }
