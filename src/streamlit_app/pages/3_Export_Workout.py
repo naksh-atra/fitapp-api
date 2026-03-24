@@ -109,3 +109,11 @@ st.markdown("---")
 st.subheader("👁️ Full Plan Preview")
 with st.expander("View Raw JSON"):
     st.json(workout)
+
+# ── Footer ────────────────────────────────────────────────────────────────────
+st.markdown(
+    "<div style='text-align:right; margin-top:2rem; color:#555; font-size:0.8rem;'>"
+    "by <a href='https://github.com/naksh-atra' target='_blank' "
+    "style='color:#42A5F5; text-decoration:none;'>naksh</a></div>",
+    unsafe_allow_html=True
+)
