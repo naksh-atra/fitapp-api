@@ -20,20 +20,63 @@ apply_custom_theme()
 render_sidebar()
 
 
-def _clean_summary(text, max_len=250):
-    """Strip markdown, citation numbers like [1][2], and return a concise clean summary."""
+def _format_evidence_points(text):
+    """
+    Parse structured LLM output (3 **Point N - Heading**: body lines)
+    into clean point dicts for display.
+    Returns: [{"heading": "...", "body": "...", "citations": [...]}]
+    """
     if not text:
-        return ""
-    # Remove citation markers like [1], [2][3], [4][5][6][7]
-    text = re.sub(r'\[\d+](\[\d+])*\s*', '', text)
-    # Remove markdown bold/italic/links
-    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
-    text = re.sub(r'[*_~`]', '', text)
-    # Collapse whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-    if len(text) > max_len:
-        text = text[:max_len].rsplit(' ', 1)[0] + '...'
-    return text
+        return []
+
+    text = re.sub(r'\n{3,}', '\n\n', text)
+
+    # Extract citations from the tail (lines starting with [1] ...)
+    cit_lines = []
+    body_lines = []
+    for line in text.strip().splitlines():
+        stripped = line.strip()
+        if re.match(r'^\[\d+\]\s+https?://', stripped):
+            cit_lines.append(re.sub(r'^\[\d+\]\s+', '', stripped))
+        else:
+            body_lines.append(line)
+    body = '\n'.join(body_lines)
+
+    # Split on **Point N - ...**: pattern
+    sections = re.split(r'\*\*\s*Point\s+\d+\s*[-–—]\s*', body)
+    sections = [s for s in sections if s.strip()]
+
+    results = []
+    for sec in sections:
+        # Heading: text up to first **
+        match = re.match(r'^(.+?)\*\*\s*[:\-–—]?\s*', sec)
+        if match:
+            heading = re.sub(r'[*_`~]', '', match.group(1)).strip().rstrip(':')
+            rest = sec[match.end():].strip().lstrip(':').strip()
+        else:
+            heading = "Research Evidence"
+            rest = sec.strip()
+
+        # Clean the body: strip bold/italic markdown, collapse whitespace
+        rest = re.sub(r'\*\*', '', rest)
+        rest = re.sub(r'[*_`~]', '', rest)
+        rest = re.sub(r'\[\d+](\[\d+])*\s*', '', rest)
+        rest = re.sub(r'\s+', ' ', rest).strip()
+        # Take first 5 sentences (roughly 5-6 lines of readable text)
+        sentences = re.split(r'(?<=[.!?])\s+', rest)
+        clean_body = ' '.join(sentences[:5]).strip()
+        if len(sentences) > 5:
+            clean_body += '...'
+
+        results.append({"heading": heading, "body": clean_body})
+
+    # Attach citations to first result
+    if results and cit_lines:
+        results[0]["citations"] = cit_lines
+    elif results:
+        results[0]["citations"] = []
+
+    return results
 
 st.markdown("<h1 style='font-size: 3rem;'>WORKOUT GENERATOR</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color:#666;'>Configure your performance targets and let the Research Engine build your validated weekly plan.</p>", unsafe_allow_html=True)
@@ -103,35 +146,24 @@ if st.session_state.current_workout:
     if workout.get("dietary_disclaimer"):
         st.warning(f"⚠️ **NUTRITION NOTICE:** {workout['dietary_disclaimer']}")
 
-    # ── Weekly volume summary (hypertrophy only) ─────────────────────────────
-    if workout.get("weekly_volume_summary"):
-        with st.expander("📊 WEEKLY VOLUME SUMMARY"):
-            vol = workout["weekly_volume_summary"]
-            cols = st.columns(3)
-            items = [(k, v) for k, v in vol.items() if k != "note"]
-            for i, (muscle, sets) in enumerate(items):
-                cols[i % 3].metric(muscle.title(), sets)
-            if vol.get("note"):
-                st.caption(vol["note"])
-
     # ── Science validation banner ─────────────────────────────────────────────
     if workout.get("research_validation"):
         val = workout["research_validation"]
         evidence_level = val.get("evidence_level", "HIGH")
-        clean_preview  = _clean_summary(val.get("evidence_summary", ""), max_len=250)
+        raw_text = val.get("evidence_summary", "")
+        evidence_points = _format_evidence_points(raw_text)
 
         with st.expander(f"SCIENCE VALIDATED - {evidence_level}", expanded=False):
-            st.markdown(
-                f"<p style='color:#B0B0B0; font-size:0.85rem; line-height:1.5;'>{clean_preview}</p>",
-                unsafe_allow_html=True
-            )
-            full_text = val.get("evidence_summary", "")
-            if full_text:
+            if evidence_points:
                 with st.expander("View full evidence"):
-                    st.markdown(full_text)
-            if val.get("citations"):
+                    for point in evidence_points:
+                        st.markdown(f"**{point['heading']}**")
+                        st.markdown(point["body"])
+                        st.markdown("")
+            citations = evidence_points[0].get("citations", []) if evidence_points else val.get("citations", [])
+            if citations:
                 st.markdown("**Citations:**")
-                for c in val["citations"]:
+                for c in citations:
                     st.markdown(f"- {c}")
 
     # ── Weekly plan - one expander per day ───────────────────────────────────

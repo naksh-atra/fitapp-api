@@ -64,10 +64,26 @@ if workout.get("dietary_disclaimer"):
 if workout.get("weekly_volume_summary"):
     with st.expander("📊 WEEKLY VOLUME SUMMARY"):
         vol = workout["weekly_volume_summary"]
-        cols = st.columns(3)
         items = [(k, v) for k, v in vol.items() if k != "note"]
-        for i, (muscle, sets) in enumerate(items):
-            cols[i % 3].metric(muscle.title(), sets)
+
+        # Build HTML grid with consistent font sizing (matches metadata row)
+        cells = ""
+        for muscle, sets_val in items:
+            cells += f"""
+    <div style="text-align:center; background:rgba(255,255,255,0.03);
+                border:1px solid rgba(255,255,255,0.08); border-radius:12px;
+                padding:0.75rem 0.5rem;">
+        <div style="color:#888; font-size:0.65rem; text-transform:uppercase;
+                    letter-spacing:0.05em; margin-bottom:4px;">{muscle.title()}</div>
+        <div style="color:#fff; font-size:0.85rem; font-weight:600;">{sets_val}</div>
+    </div>"""
+
+        st.markdown(f"""
+<div style="display:grid; grid-template-columns:repeat(3, 1fr);
+     gap:0.75rem; margin-bottom:0.75rem;">{cells}
+</div>
+""", unsafe_allow_html=True)
+
         if vol.get("note"):
             st.caption(vol["note"])
 

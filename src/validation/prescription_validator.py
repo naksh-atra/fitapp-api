@@ -125,10 +125,27 @@ Validate against 2023-2025 research:
             return {"error": "No API key configured", "status_code": 500}
 
         if context:
-            system_prompt = f"You are a sports science researcher. Answer ONLY using the provided research context below.\n\nRetrieved Research:\n{context}"
+            system_prompt = (
+                f"You are a sports science researcher. Answer ONLY using the provided research context.\n\n"
+                f"Retrieved Research:\n{context}\n\n"
+                f"Respond in EXACTLY 3 structured points. Format each point as:\n\n"
+                f"**Point 1 - [Heading]**: [3-4 concise sentences, no citation markers like [1] or [2] within text]\n"
+                f"**Point 2 - [Heading]**: [3-4 concise sentences]\n"
+                f"**Point 3 - [Heading]**: [3-4 concise sentences]\n\n"
+                f"After the 3 points, list citations separately:\n[1] URL\n[2] URL\n\n"
+                f"Rules: No markdown headers (#). No inline citation markers within body text. Max 4 sentences per point."
+            )
             user_content = f"Analyze this {goal} prescription based on the provided research: {query}"
         else:
-            system_prompt = "You are a sports science researcher analyzing workout prescriptions. Provide concise evidence-based analysis with recent citations (2023-2025). Always include full citation URLs."
+            system_prompt = (
+                "You are a sports science researcher analyzing workout prescriptions.\n\n"
+                "Respond in EXACTLY 3 structured points. Format each point as:\n\n"
+                "**Point 1 - [Heading]**: [3-4 concise sentences, no citation markers like [1] or [2] within text]\n"
+                "**Point 2 - [Heading]**: [3-4 concise sentences]\n"
+                "**Point 3 - [Heading]**: [3-4 concise sentences]\n\n"
+                "After the 3 points, list citations separately:\n[1] URL\n[2] URL\n\n"
+                "Rules: No markdown headers (#). No inline citation markers within body text. Max 4 sentences per point."
+            )
             user_content = f"Goal: {goal}\nPrescription: {query}"
 
         payload = {
