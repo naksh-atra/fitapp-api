@@ -55,9 +55,9 @@ if st.session_state.current_workout:
 
     # ── Metadata row ─────────────────────────────────────────────────────────
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Goal",       workout.get("goal", "—").upper())
-    m2.metric("Split",      workout.get("split_type", "—"))
-    m3.metric("Days / Week", workout.get("training_days_per_week", "—"))
+    m1.metric("Goal",       workout.get("goal", "-").upper())
+    m2.metric("Split",      workout.get("split_type", "-"))
+    m3.metric("Days / Week", workout.get("training_days_per_week", "-"))
     m4.metric("Evidence",   workout.get("evidence_level", "HIGH"))
 
     # ── Dietary disclaimer (fat loss only) ───────────────────────────────────
@@ -80,15 +80,16 @@ if st.session_state.current_workout:
         val = workout["research_validation"]
         st.markdown(f"""
         <div class="verdict-card verdict-green">
-            <h3 style="margin:0; color:#00FF88;">✓ SCIENCE VALIDATED — {val.get('evidence_level','HIGH')}</h3>
+            <h3 style="margin:0; color:#00FF88;">✓ SCIENCE VALIDATED - {val.get('evidence_level','HIGH')}</h3>
             <p style="margin:5px 0 0 0; font-size:0.9rem; color:#B0B0B0;">{val['evidence_summary'][:400]}...</p>
         </div>
         """, unsafe_allow_html=True)
 
-    # ── Weekly plan — one expander per day ───────────────────────────────────
+    # ── Weekly plan - one expander per day ───────────────────────────────────
     st.markdown("### 📅 WEEKLY PLAN")
 
     DAY_LABELS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    DEFAULT_EXPANDED_DAYS = {"monday", "tuesday", "wednesday"}
     weekly_plan = workout.get("weekly_plan", {})
 
     for day in DAY_LABELS:
@@ -103,13 +104,14 @@ if st.session_state.current_workout:
 
         # Day header colour
         if is_rest:
-            label = f"💤 **{day.upper()}** — {session_name}"
+            label = f"💤 **{day.upper()}** - {session_name}"
         else:
-            label = f"💪 **{day.upper()}** — {session_name}"
+            label = f"💪 **{day.upper()}** - {session_name}"
 
-        with st.expander(label, expanded=not is_rest):
+        expanded = not is_rest and (day in DEFAULT_EXPANDED_DAYS)
+        with st.expander(label, expanded=expanded):
             if is_rest:
-                st.markdown(f"<p style='color:#666;'>{session.get('notes', 'Active Recovery — light walking, stretching or complete rest.')}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:#666;'>{session.get('notes', 'Active Recovery - light walking, stretching or complete rest.')}</p>", unsafe_allow_html=True)
             else:
                 for ex in exercises:
                     render_session_card(ex)

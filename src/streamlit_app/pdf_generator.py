@@ -1,5 +1,5 @@
 """
-PDF Generator for FitApp workouts — v2.0
+PDF Generator for FitApp workouts - v2.0
 Generates a Monday–Sunday weekly plan table.
 """
 
@@ -95,9 +95,9 @@ class FitAppPDFGenerator:
             fontSize=11, textColor=self.color_primary,
             spaceAfter=8, fontName="Helvetica-Bold"
         )
-        goal      = workout.get("goal", "—").upper()
-        split     = workout.get("split_type", "—")
-        days      = str(workout.get("training_days_per_week", "—"))
+        goal      = workout.get("goal", "-").upper()
+        split     = workout.get("split_type", "-")
+        days      = str(workout.get("training_days_per_week", "-"))
         evidence  = workout.get("evidence_level", "HIGH")
 
         data = [
@@ -212,7 +212,7 @@ class FitAppPDFGenerator:
             if is_rest:
                 rest_note = session.get("notes", "Active Recovery")
                 rest_cell = [Paragraph(rest_note, rest_style)]
-                empty     = [Paragraph("—", rest_style)]
+                empty     = [Paragraph("-", rest_style)]
                 row_count = len(col_headers) - 1
                 table_data.append([day_label] + [empty[0]] * row_count)
                 # shade rest rows later via rowBackgrounds
@@ -246,7 +246,7 @@ class FitAppPDFGenerator:
                     sname  = station.get("name") or station.get("exercise", "?")
                     work   = self._fmt(station.get("work_seconds"), "s")
                     rest   = self._fmt(station.get("rest_seconds"), "s")
-                    rpe    = item.get("rpe", "—")
+                    rpe    = item.get("rpe", "-")
                     snotes = self._strip_md(station.get("pro_notes", notes))[:80]
                     if goal == "fatloss":
                         rows.append([
@@ -260,11 +260,11 @@ class FitAppPDFGenerator:
                     else:
                         rows.append([
                             Paragraph(f"{sname} (circuit)", cell_style),
-                            Paragraph("—", cell_style),
+                            Paragraph("-", cell_style),
                             Paragraph(rounds + " rds", cell_style),
                             Paragraph(rest, cell_style),
                             Paragraph(rpe, cell_style),
-                            Paragraph("—", cell_style),
+                            Paragraph("-", cell_style),
                             Paragraph(snotes, cell_style),
                         ])
                 continue
@@ -277,9 +277,9 @@ class FitAppPDFGenerator:
                     dur_str = f"{item['intervals']}×{item.get('interval_duration_min','?')} min"
                 else:
                     dur_str = self._fmt(item.get("duration_minutes"), " min")
-                intensity = item.get("intensity", "—")
-                zone      = item.get("intensity_zone", "—")
-                rpe       = item.get("rpe", "—")
+                intensity = item.get("intensity", "-")
+                zone      = item.get("intensity_zone", "-")
+                rpe       = item.get("rpe", "-")
                 if goal == "endurance":
                     rows.append([
                         Paragraph(name, cell_style),
@@ -292,11 +292,11 @@ class FitAppPDFGenerator:
                 else:
                     rows.append([
                         Paragraph(name, cell_style),
-                        Paragraph("—", cell_style),
+                        Paragraph("-", cell_style),
                         Paragraph(dur_str, cell_style),
                         Paragraph(intensity, cell_style),
                         Paragraph(rpe, cell_style),
-                        Paragraph("—", cell_style),
+                        Paragraph("-", cell_style),
                         Paragraph(notes, cell_style),
                     ])
                 continue
@@ -304,9 +304,9 @@ class FitAppPDFGenerator:
             # ── Threshold circuit (endurance) ─────────────────────────────────
             if ex_type == "cardio_threshold" and "stations" not in item:
                 rounds    = self._fmt(item.get("circuit_rounds"))
-                intensity = item.get("intensity", "—")
-                zone      = item.get("intensity_zone", "—")
-                rpe       = item.get("rpe", "—")
+                intensity = item.get("intensity", "-")
+                zone      = item.get("intensity_zone", "-")
+                rpe       = item.get("rpe", "-")
                 if goal == "endurance":
                     rows.append([
                         Paragraph(name, cell_style),
@@ -322,7 +322,7 @@ class FitAppPDFGenerator:
             sets   = self._fmt(item.get("sets"))
             reps   = self._fmt(item.get("reps"))
             rest   = self._fmt(item.get("rest_seconds"), "s")
-            rpe    = item.get("rpe", "—")
+            rpe    = item.get("rpe", "-")
             tempo  = item.get("tempo", "")
             pct    = item.get("percent_1rm", "")
             extra  = pct if pct else tempo
@@ -338,7 +338,7 @@ class FitAppPDFGenerator:
                 Paragraph(notes, cell_style),
             ])
 
-        return rows if rows else [[Paragraph("—", cell_style)] * (7 if goal in ("hypertrophy","strength") else 6)]
+        return rows if rows else [[Paragraph("-", cell_style)] * (7 if goal in ("hypertrophy","strength") else 6)]
 
     def _weekly_table_style(self, row_count):
         return TableStyle([
@@ -434,7 +434,7 @@ class FitAppPDFGenerator:
         footer_s = ParagraphStyle("FT", parent=styles["Normal"], fontSize=8,
                                   textColor=colors.grey, spaceAfter=2, alignment=TA_CENTER)
         return [
-            Paragraph(f"Workout ID: {workout.get('workout_id', '—')}", footer_s),
+            Paragraph(f"Workout ID: {workout.get('workout_id', '-')}", footer_s),
             Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | ResFit v2.0", footer_s),
             Paragraph("Science-backed weekly training plans with Hybrid RAG validation", footer_s),
         ]
@@ -443,7 +443,7 @@ class FitAppPDFGenerator:
     @staticmethod
     def _fmt(val, suffix=""):
         if val is None:
-            return "—"
+            return "-"
         if isinstance(val, list) and len(val) == 2:
             s = f"{val[0]}-{val[1]}"
         else:

@@ -68,7 +68,7 @@ def clear_cache():
 def _assert_response_structure(resp, goal, equipment, experience):
     """Common structure checks for every 200 response"""
     assert resp.status_code == 200, (
-        f"{goal}/{equipment}/{experience}: HTTP {resp.status_code} — {resp.text[:200]}"
+        f"{goal}/{equipment}/{experience}: HTTP {resp.status_code} - {resp.text[:200]}"
     )
     body = resp.json()
     assert "data"   in body,          "Missing top-level 'data'"
@@ -93,7 +93,7 @@ def _assert_exercise_schema(exercises, goal):
         reps   = ex["reps"]
         ex_min = reps[0] if isinstance(reps, list) else reps
         assert ex_min <= high, (
-            f"{goal}: {ex['name']} reps {reps} — min {ex_min} exceeds goal ceiling {high}"
+            f"{goal}: {ex['name']} reps {reps} - min {ex_min} exceeds goal ceiling {high}"
         )
 
 
@@ -189,7 +189,7 @@ def test_validation_errors(test_case, expected_status):
 
 
 # ---------------------------------------------------------------------------
-# 5. Toxic inputs — never 500
+# 5. Toxic inputs - never 500
 # ---------------------------------------------------------------------------
 
 @pytest.mark.parametrize("payload", [
@@ -246,7 +246,7 @@ def test_substitution_verdicts(goal, original, replacement, reason):
         timeout=90,
     )
     assert resp.status_code == 200, (
-        f"validate_swap {goal}: HTTP {resp.status_code} — {resp.text[:200]}"
+        f"validate_swap {goal}: HTTP {resp.status_code} - {resp.text[:200]}"
     )
     data = resp.json()
     assert data["verdict"] in ["GREEN", "YELLOW", "RED"]

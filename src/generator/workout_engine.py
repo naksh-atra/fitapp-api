@@ -27,7 +27,7 @@ ACTIVE_RECOVERY_SESSION = {
 }
 
 # ---------------------------------------------------------------------------
-# Master exercise database — split by movement category and equipment
+# Master exercise database - split by movement category and equipment
 # ---------------------------------------------------------------------------
 EXERCISE_DB: Dict[str, Dict[str, List[str]]] = {
     "gym": {
@@ -147,7 +147,7 @@ class WorkoutGenerator:
         }
 
     # -----------------------------------------------------------------------
-    # Backward-compat shim — used by /test endpoint only
+    # Backward-compat shim - used by /test endpoint only
     # -----------------------------------------------------------------------
     def generate_workout(
         self,
@@ -166,7 +166,7 @@ class WorkoutGenerator:
         return weekly
 
     # -----------------------------------------------------------------------
-    # HYPERTROPHY — Push/Pull/Legs × 2  (6 days, Sunday rest)
+    # HYPERTROPHY - Push/Pull/Legs × 2  (6 days, Sunday rest)
     # -----------------------------------------------------------------------
     def _build_hypertrophy_week(
         self, prescription: Dict, db: Dict, experience: str
@@ -180,7 +180,7 @@ class WorkoutGenerator:
             compound_reps = [6, 8] if rep_scheme == "strength" else [8, 12]
             return [
                 self._make_compound(db["push_compound"][0], compound_reps, sets, p_compound,
-                                    "Controlled 3s eccentric — maximize pectoral mechanical tension."),
+                                    "Controlled 3s eccentric - maximize pectoral mechanical tension."),
                 self._make_compound(db["push_compound"][1], compound_reps, sets, p_compound,
                                     "Drive elbows slightly forward; full lockout at the top."),
                 self._make_isolation(db["push_isolation"][0], [10, 15], sets, p_isolation,
@@ -199,18 +199,18 @@ class WorkoutGenerator:
                 self._make_isolation(db["pull_isolation"][0], [10, 15], sets, p_isolation,
                                      "Supinate at the top; avoid swinging the torso."),
                 self._make_isolation(db["pull_isolation"][1], [12, 20], sets, p_isolation,
-                                     "High elbow path — target posterior deltoid and rhomboids."),
+                                     "High elbow path - target posterior deltoid and rhomboids."),
             ]
 
         def legs_session(rep_scheme: str) -> Dict:
             compound_reps = [6, 8] if rep_scheme == "strength" else [8, 12]
             return [
                 self._make_compound(db["legs_compound"][0], compound_reps, sets, p_compound,
-                                    "Break parallel — load the glutes in the lengthened position."),
+                                    "Break parallel - load the glutes in the lengthened position."),
                 self._make_compound(db["legs_compound"][1], compound_reps, sets, p_compound,
                                     "Hinge at the hip; maintain neutral spine throughout the ROM."),
                 self._make_isolation(db["legs_isolation"][0], [10, 15], sets, p_isolation,
-                                     "Full knee flexion — maximize hamstring stretch under load."),
+                                     "Full knee flexion - maximize hamstring stretch under load."),
                 self._make_isolation(db["legs_isolation"][1], [12, 20], sets, p_isolation,
                                      "Controlled extension; pause 1s at peak to prevent momentum."),
             ]
@@ -231,18 +231,18 @@ class WorkoutGenerator:
                 "note":     "Based on 2 sessions per muscle group per week. Meets 10-20 sets/muscle/week threshold (Schoenfeld et al. 2016)."
             },
             "weekly_plan": {
-                "monday":    {"session_name": "Push A — Strength Focus",   "session_type": "push",  "exercises": push_session("strength")},
-                "tuesday":   {"session_name": "Pull A — Strength Focus",   "session_type": "pull",  "exercises": pull_session("strength")},
-                "wednesday": {"session_name": "Legs A — Strength Focus",   "session_type": "legs",  "exercises": legs_session("strength")},
-                "thursday":  {"session_name": "Push B — Hypertrophy Focus","session_type": "push",  "exercises": push_session("hypertrophy")},
-                "friday":    {"session_name": "Pull B — Hypertrophy Focus","session_type": "pull",  "exercises": pull_session("hypertrophy")},
-                "saturday":  {"session_name": "Legs B — Hypertrophy Focus","session_type": "legs",  "exercises": legs_session("hypertrophy")},
+                "monday":    {"session_name": "Push A - Strength Focus",   "session_type": "push",  "exercises": push_session("strength")},
+                "tuesday":   {"session_name": "Pull A - Strength Focus",   "session_type": "pull",  "exercises": pull_session("strength")},
+                "wednesday": {"session_name": "Legs A - Strength Focus",   "session_type": "legs",  "exercises": legs_session("strength")},
+                "thursday":  {"session_name": "Push B - Hypertrophy Focus","session_type": "push",  "exercises": push_session("hypertrophy")},
+                "friday":    {"session_name": "Pull B - Hypertrophy Focus","session_type": "pull",  "exercises": pull_session("hypertrophy")},
+                "saturday":  {"session_name": "Legs B - Hypertrophy Focus","session_type": "legs",  "exercises": legs_session("hypertrophy")},
                 "sunday":    dict(ACTIVE_RECOVERY_SESSION),
             }
         }
 
     # -----------------------------------------------------------------------
-    # STRENGTH — Daily Undulating Periodization (DUP, 4 days)
+    # STRENGTH - Daily Undulating Periodization (DUP, 4 days)
     # -----------------------------------------------------------------------
     def _build_strength_week(
         self, prescription: Dict, db: Dict, experience: str
@@ -288,7 +288,7 @@ class WorkoutGenerator:
                 "name":        name,
                 "type":        "accessory",
                 "sets":        acc_sets,
-                "reps":        [3, 6],          # capped — never exceed 6 in a strength block
+                "reps":        [3, 6],          # capped - never exceed 6 in a strength block
                 "percent_1rm": p_acc["weight_1rm_percent"],
                 "rpe":         p_acc["intensity_rpe"],
                 "rest_seconds": [120, 180],
@@ -300,39 +300,39 @@ class WorkoutGenerator:
             "training_days_per_week": 4,
             "weekly_plan": {
                 "monday": {
-                    "session_name": "Squat — Heavy Day (DUP)",
+                    "session_name": "Squat - Heavy Day (DUP)",
                     "session_type": "strength_lower_heavy",
                     "exercises": [
                         heavy(squat, [2, 3], "87-93% 1RM",
                               "Maximum neural intent on the concentric. Brace the entire trunk before unracking."),
-                        accessory(bench, "Volume bench — reinforce groove; focus on bar path consistency."),
+                        accessory(bench, "Volume bench - reinforce groove; focus on bar path consistency."),
                     ]
                 },
                 "tuesday": {
-                    "session_name": "Bench — Heavy Day (DUP)",
+                    "session_name": "Bench - Heavy Day (DUP)",
                     "session_type": "strength_upper_heavy",
                     "exercises": [
                         heavy(bench, [2, 3], "87-93% 1RM",
                               "Leg drive into the floor; maintain upper-back tightness throughout the press."),
-                        accessory(accessories[3], "Pull after press — agonist/antagonist pairing reduces fatigue and improves joint balance."),
+                        accessory(accessories[3], "Pull after press - agonist/antagonist pairing reduces fatigue and improves joint balance."),
                     ]
                 },
                 "wednesday": dict(ACTIVE_RECOVERY_SESSION),
                 "thursday": {
-                    "session_name": "Deadlift — Heavy Day (DUP)",
+                    "session_name": "Deadlift - Heavy Day (DUP)",
                     "session_type": "strength_hinge_heavy",
                     "exercises": [
                         heavy(dead, [1, 2], "90-95% 1RM",
-                              "Lat engagement before the pull — 'protect your armpits'. Squeeze glutes at lockout."),
+                              "Lat engagement before the pull - 'protect your armpits'. Squeeze glutes at lockout."),
                         accessory(ohp, "Overhead strength supports bench lockout mechanics and shoulder health."),
                     ]
                 },
                 "friday": {
-                    "session_name": "Squat + Bench — Volume Day (DUP)",
+                    "session_name": "Squat + Bench - Volume Day (DUP)",
                     "session_type": "strength_volume",
                     "exercises": [
                         volume(squat, [5, 6], "75-80% 1RM",
-                               "Accumulate volume at moderate intensity — focus on bar speed and technical consistency."),
+                               "Accumulate volume at moderate intensity - focus on bar speed and technical consistency."),
                         volume(bench, [5, 6], "75-80% 1RM",
                                "Touch-and-go reps acceptable here; maintain arch and leg drive."),
                     ]
@@ -343,7 +343,7 @@ class WorkoutGenerator:
         }
 
     # -----------------------------------------------------------------------
-    # ENDURANCE — Polarized 80/20 (5 days)
+    # ENDURANCE - Polarized 80/20 (5 days)
     # -----------------------------------------------------------------------
     def _build_endurance_week(
         self, prescription: Dict, db: Dict, experience: str
@@ -368,7 +368,7 @@ class WorkoutGenerator:
                 "intensity_zone":  "Zone 2",
                 "rpe":             "6-7",
                 "cadence_note":    f"Running: 170-180 spm | Cycling: 85-95 rpm | Rowing: 18-22 spm",
-                "pro_notes":       "Conversational pace — you should be able to speak in full sentences. Stay below lactate threshold at all times.",
+                "pro_notes":       "Conversational pace - you should be able to speak in full sentences. Stay below lactate threshold at all times.",
             }
 
         def threshold_circuit() -> Dict:
@@ -382,7 +382,7 @@ class WorkoutGenerator:
                 "type":            "cardio_threshold",
                 "circuit_rounds":  [4, 6],
                 "stations":        stations,
-                "load_constraint": "<60% 1RM — keep load low to maintain cardiovascular density",
+                "load_constraint": "<60% 1RM - keep load low to maintain cardiovascular density",
                 "intensity":       f"{p_thresh['intensity_hrmax_percent']} HRmax",
                 "intensity_zone":  "Zone 3-4",
                 "rpe":             "8-9",
@@ -392,7 +392,7 @@ class WorkoutGenerator:
 
         def vo2max_intervals() -> Dict:
             return {
-                "name":                  f"{vo2_pool[0]} — VO2max Intervals",
+                "name":                  f"{vo2_pool[0]} - VO2max Intervals",
                 "type":                  "cardio_vo2max",
                 "intervals":             4,
                 "interval_duration_min": 4,
@@ -407,18 +407,18 @@ class WorkoutGenerator:
             "split_type": "Polarized 80/20 (Zone 2 base + Threshold + VO2max)",
             "training_days_per_week": 5,
             "weekly_plan": {
-                "monday":    {"session_name": f"Zone 2 Aerobic — {z2_pool[0]}",     "session_type": "endurance_zone2",      "exercises": [zone2_session(z2_pool[0])]},
+                "monday":    {"session_name": f"Zone 2 Aerobic - {z2_pool[0]}",     "session_type": "endurance_zone2",      "exercises": [zone2_session(z2_pool[0])]},
                 "tuesday":   {"session_name": "Lactate Threshold Circuit",           "session_type": "endurance_threshold",  "exercises": [threshold_circuit()]},
-                "wednesday": {"session_name": f"Zone 2 Aerobic — {z2_pool[1]}",     "session_type": "endurance_zone2",      "exercises": [zone2_session(z2_pool[1])]},
+                "wednesday": {"session_name": f"Zone 2 Aerobic - {z2_pool[1]}",     "session_type": "endurance_zone2",      "exercises": [zone2_session(z2_pool[1])]},
                 "thursday":  {"session_name": "VO2max Intervals",                    "session_type": "endurance_vo2max",     "exercises": [vo2max_intervals()]},
-                "friday":    {"session_name": f"Zone 2 Aerobic — {z2_pool[2]}",     "session_type": "endurance_zone2",      "exercises": [zone2_session(z2_pool[2])]},
+                "friday":    {"session_name": f"Zone 2 Aerobic - {z2_pool[2]}",     "session_type": "endurance_zone2",      "exercises": [zone2_session(z2_pool[2])]},
                 "saturday":  dict(ACTIVE_RECOVERY_SESSION),
                 "sunday":    dict(ACTIVE_RECOVERY_SESSION),
             }
         }
 
     # -----------------------------------------------------------------------
-    # FAT LOSS — HIIT × 3 + Steady-state × 2 (5 days)
+    # FAT LOSS - HIIT × 3 + Steady-state × 2 (5 days)
     # -----------------------------------------------------------------------
     def _build_fatloss_week(self, prescription: Dict, db: Dict) -> Dict:
         p_hiit = prescription["fatloss"]["hiit_circuits"]["parameters"]
@@ -426,7 +426,7 @@ class WorkoutGenerator:
         hiit_pool   = db["hiit"]
         steady_pool = db["cardio_steady"]
 
-        # Work/rest intervals — hard cap rest at 60s regardless of YAML
+        # Work/rest intervals - hard cap rest at 60s regardless of YAML
         work_interval  = self._parse_range(p_hiit["work_interval_seconds"])
         rest_interval  = [
             max(15, self._parse_range(p_hiit["rest_interval_seconds"])[0]),
@@ -443,7 +443,7 @@ class WorkoutGenerator:
                     "reps":               [12, 15],
                     "rpe":                "9-10",
                     "pro_notes":          random.choice([
-                        "Maximum effort on the work interval — full power output.",
+                        "Maximum effort on the work interval - full power output.",
                         "Short rest to amplify EPOC (afterburn effect).",
                         "Prioritize movement quality even under high metabolic fatigue.",
                         "Drive through the entire range of motion on every rep.",
@@ -470,7 +470,7 @@ class WorkoutGenerator:
                 "intensity":       "60-75% HRmax",
                 "intensity_zone":  "Zone 2-3",
                 "rpe":             "5-6",
-                "pro_notes":       "Active recovery day — promotes fat oxidation and aids HIIT recovery without adding significant fatigue.",
+                "pro_notes":       "Active recovery day - promotes fat oxidation and aids HIIT recovery without adding significant fatigue.",
             }
 
         return {
@@ -484,9 +484,9 @@ class WorkoutGenerator:
             ),
             "weekly_plan": {
                 "monday":    {"session_name": "HIIT Circuit A",          "session_type": "fatloss_hiit",   "exercises": [hiit_circuit()]},
-                "tuesday":   {"session_name": f"Steady-State — {steady_pool[0]}", "session_type": "fatloss_steady", "exercises": [steady_session(steady_pool[0])]},
+                "tuesday":   {"session_name": f"Steady-State - {steady_pool[0]}", "session_type": "fatloss_steady", "exercises": [steady_session(steady_pool[0])]},
                 "wednesday": {"session_name": "HIIT Circuit B",          "session_type": "fatloss_hiit",   "exercises": [hiit_circuit()]},
-                "thursday":  {"session_name": f"Steady-State — {steady_pool[1]}", "session_type": "fatloss_steady", "exercises": [steady_session(steady_pool[1])]},
+                "thursday":  {"session_name": f"Steady-State - {steady_pool[1]}", "session_type": "fatloss_steady", "exercises": [steady_session(steady_pool[1])]},
                 "friday":    {"session_name": "HIIT Circuit C",          "session_type": "fatloss_hiit",   "exercises": [hiit_circuit()]},
                 "saturday":  dict(ACTIVE_RECOVERY_SESSION),
                 "sunday":    dict(ACTIVE_RECOVERY_SESSION),
@@ -506,7 +506,7 @@ class WorkoutGenerator:
             "sets":         sets,
             "reps":         reps,
             "tempo":        params["tempo"],
-            "rest_seconds": [120, 180],   # 2-3 min — hardcoded, never null
+            "rest_seconds": [120, 180],   # 2-3 min - hardcoded, never null
             "rpe":          params["intensity_rpe"],
             "pro_notes":    note,
         }
@@ -521,7 +521,7 @@ class WorkoutGenerator:
             "sets":         sets,
             "reps":         reps,
             "tempo":        params["tempo"],
-            "rest_seconds": [90, 120],    # 1.5-2 min — hardcoded, never null
+            "rest_seconds": [90, 120],    # 1.5-2 min - hardcoded, never null
             "rpe":          params["intensity_rpe"],
             "pro_notes":    note,
         }

@@ -196,7 +196,7 @@ def _fmt(val, suffix=""):
         if val[0] == val[1]:
             return f"{val[0]}{suffix}"
         return f"{val[0]}-{val[1]}{suffix}"
-    return f"{val}{suffix}" if val is not None else "—"
+    return f"{val}{suffix}" if val is not None else "-"
 
 
 def render_session_card(ex):
@@ -204,9 +204,9 @@ def render_session_card(ex):
     Renders one item from a session's exercises list.
     Handles 4 distinct shapes:
       1. compound / isolation  (hypertrophy / strength)
-      2. cardio_aerobic / cardio_vo2max  (endurance — duration-based, no sets/reps)
+      2. cardio_aerobic / cardio_vo2max  (endurance - duration-based, no sets/reps)
       3. hiit_circuit / cardio_threshold  (circuit with stations[])
-      4. cardio_steady_state  (fatloss steady state — duration-based)
+      4. cardio_steady_state  (fatloss steady state - duration-based)
     """
     ex_type = ex.get("type", "")
     name    = ex.get("name", "Exercise")
@@ -229,14 +229,14 @@ def render_session_card(ex):
             rest     = _fmt(st_item.get("rest_seconds"), "s")
             reps_s   = _fmt(st_item.get("reps")) if st_item.get("reps") else ""
             dur_s    = _fmt(st_item.get("duration_seconds"), "s") if st_item.get("duration_seconds") else ""
-            detail   = work if work != "—" else dur_s
+            detail   = work if work != "-" else dur_s
             stations_html += f"""
 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
   <span style="color:#fff; font-weight:600;">{sname.upper()}</span>
   <span style="color:#888; font-size:0.85rem;">
-    {"Work: " + detail + " &nbsp;|&nbsp; " if detail and detail != "—" else ""}
-    {"Rest: " + rest + " &nbsp;|&nbsp; " if rest and rest != "—" else ""}
-    {"Reps: " + reps_s if reps_s and reps_s != "—" else ""}
+    {"Work: " + detail + " &nbsp;|&nbsp; " if detail and detail != "-" else ""}
+    {"Rest: " + rest + " &nbsp;|&nbsp; " if rest and rest != "-" else ""}
+    {"Reps: " + reps_s if reps_s and reps_s != "-" else ""}
   </span>
 </div>"""
 
@@ -255,7 +255,7 @@ def render_session_card(ex):
         st.markdown(html, unsafe_allow_html=True)
         return
 
-    # ── CARDIO (duration-based — endurance zone2/vo2max, fatloss steady) ──────
+    # ── CARDIO (duration-based - endurance zone2/vo2max, fatloss steady) ──────
     if ex_type in ("cardio_aerobic", "cardio_steady_state", "cardio_vo2max"):
         duration  = _fmt(ex.get("duration_minutes"), " min")
         intensity = ex.get("intensity", "")
@@ -292,7 +292,7 @@ def render_session_card(ex):
     sets    = _fmt(ex.get("sets"))
     reps    = _fmt(ex.get("reps"))
     rest    = _fmt(ex.get("rest_seconds"), "s")
-    rpe     = ex.get("rpe", "—")
+    rpe     = ex.get("rpe", "-")
     tempo   = ex.get("tempo", "")
     pct_1rm = ex.get("percent_1rm", "")
     notes   = ex.get("pro_notes", "")
@@ -314,5 +314,5 @@ def render_session_card(ex):
 
 
 def render_exercise_card(ex):
-    """Backward-compat alias — routes to render_session_card."""
+    """Backward-compat alias - routes to render_session_card."""
     render_session_card(ex)

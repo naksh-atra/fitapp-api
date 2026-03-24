@@ -187,17 +187,17 @@ async def root():
         "prescriptions_loaded": len(generator.prescriptions),
         "available_goals": list(generator.prescriptions.keys()),
         "features": {
-            "weekly_plan_generation": "✅ Operational — full Monday–Sunday split per goal",
+            "weekly_plan_generation": "✅ Operational - full Monday–Sunday split per goal",
             "workout_modification":   "✅ Ready" if modifier else "⚠️ Manual only",
             "modification_validation":"✅ Operational" if validator else "⚠️ Not configured",
             "research_citations":     "✅ Included",
             "dietary_disclaimer":     "✅ Appended to all fat loss plans",
         },
         "splits": {
-            "hypertrophy": "Push/Pull/Legs × 2 (6 days) — Schoenfeld et al. 2016",
-            "strength":    "Daily Undulating Periodization (4 days) — Zourdos et al. 2016",
-            "endurance":   "Polarized 80/20 (5 days) — Seiler 2010",
-            "fatloss":     "HIIT × 3 + Steady-State × 2 (5 days) — Alkahtani et al. 2023",
+            "hypertrophy": "Push/Pull/Legs × 2 (6 days) - Schoenfeld et al. 2016",
+            "strength":    "Daily Undulating Periodization (4 days) - Zourdos et al. 2016",
+            "endurance":   "Polarized 80/20 (5 days) - Seiler 2010",
+            "fatloss":     "HIIT × 3 + Steady-State × 2 (5 days) - Alkahtani et al. 2023",
         },
         "endpoints": {
             "generate_workout":      "POST /generate_workout",
@@ -213,7 +213,7 @@ async def root():
 
 
 # ---------------------------------------------------------------------------
-# POST /generate_workout  — primary endpoint
+# POST /generate_workout  - primary endpoint
 # ---------------------------------------------------------------------------
 @app.post("/generate_workout")
 async def generate_workout(
@@ -235,7 +235,7 @@ async def generate_workout(
         workout_id          = f"workout_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         workout["workout_id"] = workout_id
 
-        # 2. Validate prescription — feed flattened exercise list to validator
+        # 2. Validate prescription - feed flattened exercise list to validator
         if prescription_validator:
             all_exercises = _flatten_exercises(workout)
             validation_result = prescription_validator.validate_prescription(
@@ -483,7 +483,7 @@ async def validate_swap(request: ValidateSwapRequest):
 
 
 # ---------------------------------------------------------------------------
-# GET /test/{goal}  — no-auth smoke test, reflects real output shape
+# GET /test/{goal}  - no-auth smoke test, reflects real output shape
 # ---------------------------------------------------------------------------
 @app.get("/test/{goal}")
 async def test_goal(

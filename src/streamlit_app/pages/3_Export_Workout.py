@@ -1,5 +1,5 @@
 """
-Page 3: Export Workout — updated for weekly_plan structure
+Page 3: Export Workout - updated for weekly_plan structure
 """
 
 import streamlit as st
@@ -29,9 +29,9 @@ st.markdown("Download your full weekly plan with research citations and modifica
 
 # ── Summary metrics ───────────────────────────────────────────────────────────
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("Goal",         workout.get("goal", "—").title())
-col2.metric("Split",        workout.get("split_type", "—"))
-col3.metric("Days / Week",  workout.get("training_days_per_week", "—"))
+col1.metric("Goal",         workout.get("goal", "-").title())
+col2.metric("Split",        workout.get("split_type", "-"))
+col3.metric("Days / Week",  workout.get("training_days_per_week", "-"))
 col4.metric("Evidence",     workout.get("evidence_level", "High"))
 
 # ── Dietary disclaimer ────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ with col1:
 
 with col2:
     st.markdown("### PDF Format")
-    st.caption("Human-readable weekly plan — Monday to Sunday table")
+    st.caption("Human-readable weekly plan - Monday to Sunday table")
     try:
         pdf_gen  = FitAppPDFGenerator()
         pdf_data = pdf_gen.generate(workout)

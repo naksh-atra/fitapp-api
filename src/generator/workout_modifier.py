@@ -1,5 +1,5 @@
 """
-Workout modifier v2.0 — applies validated exercise substitutions.
+Workout modifier v2.0 - applies validated exercise substitutions.
 
 Works with the new weekly_plan structure: searches across all days
 to find the target exercise, modifies it in place, and returns the

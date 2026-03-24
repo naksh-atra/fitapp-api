@@ -36,7 +36,7 @@ class ExerciseDocument(BaseModel):
 
 
 class ModificationRecord(BaseModel):
-    """Embedded in workouts.modifications[] — one swap per entry"""
+    """Embedded in workouts.modifications[] - one swap per entry"""
     original_exercise:    str
     replacement_exercise: str
     reason:               str
@@ -47,7 +47,7 @@ class ModificationRecord(BaseModel):
 
 
 class WorkoutData(BaseModel):
-    """The data block inside a workout document — mirrors what your API returns"""
+    """The data block inside a workout document - mirrors what your API returns"""
     exercises:        List[Dict[str, Any]]   # raw exercise dicts from generator
     citations:        List[str]
     evidence_level:   str                   # HIGH / MEDIUM / LOW / UNKNOWN
