@@ -82,8 +82,10 @@ def apply_custom_theme():
 
     .stat-chip b { color: var(--resfit-orange); margin-right: 4px; }
 
-    /* Premium Buttons */
-    div.stButton > button {
+    /* Premium Buttons — covers st.button, st.form_submit_button, st.download_button */
+    div.stButton > button,
+    div.stFormSubmitButton > button,
+    div.stDownloadButton > button {
         background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
         color: white !important;
         border: none !important;
@@ -97,7 +99,9 @@ def apply_custom_theme():
         box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3) !important;
     }
 
-    div.stButton > button:hover {
+    div.stButton > button:hover,
+    div.stFormSubmitButton > button:hover,
+    div.stDownloadButton > button:hover {
         transform: scale(1.02) !important;
         box-shadow: 0 8px 25px rgba(255, 87, 34, 0.5) !important;
     }
