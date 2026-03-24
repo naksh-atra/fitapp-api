@@ -159,7 +159,7 @@ def render_sidebar():
         st.markdown("<p style='text-align:center; font-size:0.7rem; color:#666; margin-bottom:2rem;'>V2.0 RESEARCH ENGINE</p>", unsafe_allow_html=True)
         
         # Navigation
-        if st.button("🏠 DASHBOARD", width="stretch"): st.switch_page("app.py")
+        if st.button("DASHBOARD", width="stretch"): st.switch_page("app.py")
         
         st.markdown("---")
         

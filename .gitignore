@@ -50,3 +50,10 @@ prompt_instructions.txt
 run_combos.py
 combos.txt
 text.txt
+
+# Obsidian vault
+.obsidian/
+ResFit_obsidian/
+
+#opencode
+.opencode/

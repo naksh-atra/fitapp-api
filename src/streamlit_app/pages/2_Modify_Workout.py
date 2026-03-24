@@ -76,7 +76,7 @@ with st.form("modification_form"):
     with col2:
         reason = st.selectbox("Reason for Modification",
                               ["Equipment Unavailable", "Injury/Pain", "Preference", "Difficulty"])
-    validate_button = st.form_submit_button("⚖️ VALIDATE SWAP VIA RESEARCH", use_container_width=True)
+    validate_button = st.form_submit_button("VALIDATE SWAP VIA RESEARCH", use_container_width=True)
 
 # ── Handle validation ─────────────────────────────────────────────────────────
 if validate_button:

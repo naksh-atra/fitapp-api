@@ -29,12 +29,12 @@ with st.form("generation_form", clear_on_submit=False):
         equipment = st.selectbox("Kit Access", ["gym", "home"], help="Available equipment")
     with col2:
         experience = st.selectbox("Experience Tier", ["beginner", "intermediate", "advanced"], help="Your current training baseline")
-    submitted = st.form_submit_button("🔥 GENERATE PERFORMANCE PLAN", use_container_width=True)
+    submitted = st.form_submit_button("GENERATE PERFORMANCE PLAN", use_container_width=True)
 
 # ── Generate ──────────────────────────────────────────────────────────────────
 if submitted:
     if not st.session_state.auth_token:
-        st.error("🔑 Demo Token Required. Please activate it in the sidebar.")
+        st.error("🔑 Demo Token Required. Please activate it in the sidebar (' >> ' sign at the top left).")
     else:
         with st.spinner("🚀 ANALYZING RESEARCH DATA..."):
             try:
