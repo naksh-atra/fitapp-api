@@ -28,11 +28,33 @@ workout = st.session_state.current_workout
 st.markdown("Download your full weekly plan with research citations and modification history.")
 
 # ── Summary metrics ───────────────────────────────────────────────────────────
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Goal",         workout.get("goal", "-").title())
-col2.metric("Split",        workout.get("split_type", "-"))
-col3.metric("Days / Week",  workout.get("training_days_per_week", "-"))
-col4.metric("Evidence",     workout.get("evidence_level", "High"))
+goal_label = workout.get("goal", "-").title()
+split_text = workout.get("split_type", "-")
+days_text  = str(workout.get("training_days_per_week", "-"))
+evidence   = workout.get("evidence_level", "High")
+
+st.markdown(f"""
+<div style="display:flex; gap:1rem; background:rgba(255,255,255,0.03);
+     border:1px solid rgba(255,255,255,0.08); border-radius:16px;
+     padding:1rem 1.5rem; margin-bottom:1rem;">
+    <div style="flex:1; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">GOAL</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{goal_label}</div>
+    </div>
+    <div style="flex:1.5; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">SPLIT</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{split_text}</div>
+    </div>
+    <div style="flex:1; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">DAYS / WEEK</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{days_text}</div>
+    </div>
+    <div style="flex:1; text-align:center;">
+        <div style="color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">EVIDENCE</div>
+        <div style="color:#fff; font-size:1rem; font-weight:600;">{evidence}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ── Dietary disclaimer ────────────────────────────────────────────────────────
 if workout.get("dietary_disclaimer"):
@@ -88,6 +110,7 @@ with col1:
 with col2:
     st.markdown("### PDF Format")
     st.caption("Human-readable weekly plan - Monday to Sunday table")
+    st.markdown('<div class="pdf-download">', unsafe_allow_html=True)
     try:
         pdf_gen  = FitAppPDFGenerator()
         pdf_data = pdf_gen.generate(workout)
@@ -103,6 +126,7 @@ with col2:
     except Exception as e:
         st.error(f"❌ PDF generation failed: {str(e)}")
         st.info("Try JSON export instead")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ── Raw preview ───────────────────────────────────────────────────────────────
 st.markdown("---")

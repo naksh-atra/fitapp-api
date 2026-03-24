@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 import os
+import re
 from pathlib import Path
 
 # Add utils to path
@@ -17,6 +18,22 @@ st.set_page_config(
 
 apply_custom_theme()
 render_sidebar()
+
+
+def _clean_summary(text, max_len=250):
+    """Strip markdown, citation numbers like [1][2], and return a concise clean summary."""
+    if not text:
+        return ""
+    # Remove citation markers like [1], [2][3], [4][5][6][7]
+    text = re.sub(r'\[\d+](\[\d+])*\s*', '', text)
+    # Remove markdown bold/italic/links
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    text = re.sub(r'[*_~`]', '', text)
+    # Collapse whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
+    if len(text) > max_len:
+        text = text[:max_len].rsplit(' ', 1)[0] + '...'
+    return text
 
 st.markdown("<h1 style='font-size: 3rem;'>WORKOUT GENERATOR</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color:#666;'>Configure your performance targets and let the Research Engine build your validated weekly plan.</p>", unsafe_allow_html=True)
@@ -78,12 +95,22 @@ if st.session_state.current_workout:
     # ── Science validation banner ─────────────────────────────────────────────
     if workout.get("research_validation"):
         val = workout["research_validation"]
-        st.markdown(f"""
-        <div class="verdict-card verdict-green">
-            <h3 style="margin:0; color:#00FF88;">✓ SCIENCE VALIDATED - {val.get('evidence_level','HIGH')}</h3>
-            <p style="margin:5px 0 0 0; font-size:0.9rem; color:#B0B0B0;">{val['evidence_summary'][:400]}...</p>
-        </div>
-        """, unsafe_allow_html=True)
+        evidence_level = val.get("evidence_level", "HIGH")
+        clean_preview  = _clean_summary(val.get("evidence_summary", ""), max_len=250)
+
+        with st.expander(f"SCIENCE VALIDATED - {evidence_level}", expanded=False):
+            st.markdown(
+                f"<p style='color:#B0B0B0; font-size:0.85rem; line-height:1.5;'>{clean_preview}</p>",
+                unsafe_allow_html=True
+            )
+            full_text = val.get("evidence_summary", "")
+            if full_text:
+                with st.expander("View full evidence"):
+                    st.markdown(full_text)
+            if val.get("citations"):
+                st.markdown("**Citations:**")
+                for c in val["citations"]:
+                    st.markdown(f"- {c}")
 
     # ── Weekly plan - one expander per day ───────────────────────────────────
     st.markdown("### 📅 WEEKLY PLAN")

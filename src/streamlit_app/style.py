@@ -82,10 +82,9 @@ def apply_custom_theme():
 
     .stat-chip b { color: var(--resfit-orange); margin-right: 4px; }
 
-    /* Premium Buttons — covers st.button, st.form_submit_button, st.download_button */
+    /* Premium Buttons — st.button and st.form_submit_button */
     div.stButton > button,
-    div.stFormSubmitButton > button,
-    div.stDownloadButton > button {
+    div.stFormSubmitButton > button {
         background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
         color: white !important;
         border: none !important;
@@ -100,8 +99,27 @@ def apply_custom_theme():
     }
 
     div.stButton > button:hover,
-    div.stFormSubmitButton > button:hover,
-    div.stDownloadButton > button:hover {
+    div.stFormSubmitButton > button:hover {
+        transform: scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(255, 87, 34, 0.5) !important;
+    }
+
+    /* Orange PDF download button (scoped to .pdf-download wrapper) */
+    .pdf-download div.stDownloadButton > button {
+        background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        width: 100%;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3) !important;
+    }
+
+    .pdf-download div.stDownloadButton > button:hover {
         transform: scale(1.02) !important;
         box-shadow: 0 8px 25px rgba(255, 87, 34, 0.5) !important;
     }
