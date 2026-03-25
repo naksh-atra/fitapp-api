@@ -1,4 +1,4 @@
-FitApp API - Research-Backed Workout Generator
+ResFit - Research-Backed Science-Based Workout Generator
 ==============================================
 
 A production-ready REST API that generates science-validated workouts for 
@@ -6,7 +6,7 @@ hypertrophy, strength, endurance, and fat loss. Designed for B2B integration
 with fitness apps.
 
 Badges:
-- FastAPI 1.0
+- FastAPI 2.0.0
 - MongoDB 8.0  
 - JWT Auth
 
@@ -43,14 +43,12 @@ POST /generate_workout
 {
   "goal": "hypertrophy",      // hypertrophy|strength|endurance|fatloss
   "equipment": "home",        // home|gym
-  "experience": "beginner",   // beginner|intermediate|advanced
-  "week": 1                   // 1 (repeatable template)
+  "experience": "beginner"    // beginner|intermediate|advanced
 }
 Returns: Workout JSON + research validation + citations
 
 User History (JWT protected):
 GET  /workouts              // List user's past workouts
-GET  /workouts/{workout_id} // Fetch specific workout + research
 
 Modifications (premium):
 POST /apply_modification     // Swap exercises with research validation
@@ -66,7 +64,7 @@ Test with JWT
    curl -X POST http://127.0.0.1:8000/generate_workout \
      -H "Authorization: Bearer YOUR_JWT" \
      -H "Content-Type: application/json" \
-     -d '{"goal":"hypertrophy","equipment":"home","experience":"beginner","week":1}'
+     -d '{"goal":"hypertrophy","equipment":"home","experience":"beginner"}'
 
 3. List history
    curl "http://127.0.0.1:8000/workouts" \
@@ -75,7 +73,7 @@ Test with JWT
 Architecture
 ------------
 
-Partner App (Peloton/MyFit) -> FastAPI API -> MongoDB
+Partner App -> FastAPI API -> MongoDB
                                            |
                                            +-> Perplexity API (Research papers)
 
@@ -135,7 +133,7 @@ Complete:
 - Home/gym equipment support
 - Smart global caching
 
-Next (1 week):
+Next:
 - GET /workouts/{id} (audit trail)
 - POST /generate_program (multi-week)
 - API key auth (B2B)
@@ -165,7 +163,7 @@ Target: <$0.01/workout at scale
 Contact
 -------
 
-For integration/partnership: nakshata.rajput@outlook.com
+nakshata.rajput@outlook.com
 Demo: Run locally -> http://127.0.0.1:8000/docs
 
-FitApp: Science-backed workouts for your fitness platform. Plug in -> Scale out.
+ResFit: Science-backed workouts for your fitness platform. Plug in -> Scale out.
