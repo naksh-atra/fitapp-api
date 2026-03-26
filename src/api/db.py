@@ -17,7 +17,10 @@ try:
         socketTimeoutMS=20000,
         heartbeatFrequencyMS=10000,
         maxPoolSize=10,
-        retryWrites=True
+        retryWrites=True,
+        tls=True,
+        tlsAllowInvalidCertificates=True,
+        tlsAllowInvalidHostnames=True
     )
     db     = client[MONGODB_DB]
     workouts_col         = db["workouts"]
