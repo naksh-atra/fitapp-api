@@ -533,6 +533,11 @@ async def health_check():
         "active_sessions":      len(workout_sessions),
     }
 
+#minimal endpoint for cron-jobs
+@app.get("/ping")
+def ping():
+    return {"status": "alive"}
+
 
 # ---------------------------------------------------------------------------
 # DELETE /clear_cache
