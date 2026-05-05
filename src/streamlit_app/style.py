@@ -354,6 +354,4 @@ def render_session_card(ex):
     st.markdown(html, unsafe_allow_html=True)
 
 
-def render_exercise_card(ex):
-    """Backward-compat alias - routes to render_session_card."""
-    render_session_card(ex)
+

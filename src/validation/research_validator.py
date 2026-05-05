@@ -2,7 +2,7 @@
 import os
 import requests
 import re
-from typing import Dict, Literal
+from typing import Dict
 
 
 class ResearchValidator:

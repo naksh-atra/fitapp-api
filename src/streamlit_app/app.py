@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from style import apply_custom_theme, render_sidebar, render_exercise_card
+from style import apply_custom_theme, render_sidebar
 
 # Page config
 st.set_page_config(

@@ -1,13 +1,12 @@
 import streamlit as st
 import sys
-import os
 import re
 from pathlib import Path
 
 # Add utils to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_client import FitAppAPI
-from style import apply_custom_theme, render_exercise_card, render_session_card, render_sidebar
+from style import apply_custom_theme, render_session_card, render_sidebar
 
 # Page config
 st.set_page_config(

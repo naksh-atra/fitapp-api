@@ -14,7 +14,7 @@ from datetime import datetime
 import traceback
 from dotenv import load_dotenv
 from enum import Enum
-from auth import get_current_user, create_access_token
+from api.auth import get_current_user
 
 load_dotenv(
     dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env.local",

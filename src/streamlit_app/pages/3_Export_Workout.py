@@ -10,7 +10,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from style import apply_custom_theme, render_sidebar
-from api_client import FitAppAPI
 from pdf_generator import FitAppPDFGenerator
 
 apply_custom_theme()
