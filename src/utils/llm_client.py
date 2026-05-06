@@ -7,10 +7,12 @@ class LLMClient:
     """Abstract LLM client supporting OpenRouter (Llama 3.3 70B)"""
 
     def __init__(self):
-        self.api_key = os.getenv("OPENROUTER_API_KEY")
+        # self.api_key = os.getenv("OPENROUTER_API_KEY")
+        self.api_key = os.getenv("DEEPSEEK_API_KEY")
         self.provider = os.getenv("LLM_PROVIDER", "openrouter")
         self.model = os.getenv("LLM_MODEL", "llama-3.3-70b-instruct")
-        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+        # self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.base_url = "https://api.deepseek.com"
         self.site_url = "https://resfit.app"
         self.app_name = "ResFit-WorkoutEngine"
 

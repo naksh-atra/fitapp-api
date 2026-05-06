@@ -200,14 +200,14 @@ def render_sidebar():
         st.markdown("<p style='text-align:center; font-size:0.7rem; color:#666; margin-bottom:2rem;'>V2.0 RESEARCH ENGINE</p>", unsafe_allow_html=True)
         
         # Navigation
-        if st.button("DASHBOARD", width="stretch"): st.switch_page("app.py")
+        if st.button("DASHBOARD"): st.switch_page("app.py")
         
         st.markdown("---")
         
         # Auth Section
         if not st.session_state.auth_token:
             st.warning("Locked Mode")
-            if st.button("🔑 ACTIVATE DEMO", width="stretch"):
+            if st.button("🔑 ACTIVATE DEMO"):
                 # Simple JWT for demo - MUST MATCH BACKEND SECRET
                 secret = os.getenv("JWT_SECRET", "devsecretapplepie")
                 expire = datetime.utcnow() + timedelta(hours=1)
@@ -216,7 +216,7 @@ def render_sidebar():
                 st.rerun()
         else:
             st.success("Authenticated")
-            if st.button("🔓 LOGOUT", width="stretch"):
+            if st.button("🔓 LOGOUT"):
                 st.session_state.auth_token = None
                 st.rerun()
 
