@@ -1,11 +1,31 @@
 # src/validation/research_validator.py
 import os
-import requests
 import re
 from typing import Dict
 
+from tavily import TavilyClient
+from utils import LLMClient, QueryTransformer
+
+
+ACADEMIC_DOMAINS = [
+    "pubmed.ncbi.nlm.nih.gov",
+    "pmc.ncbi.nlm.nih.gov",
+    "journals.lww.com",
+    "sciencedirect.com",
+    "nih.gov",
+    "tandfonline.com",
+    "mdpi.com",
+    "bjsm.bmj.com",
+    "acsm.org",
+    "nsca.com",
+    "scholar.google.com",
+    "scopus.com",
+    "webofscience.com"
+]
+
 
 class ResearchValidator:
+    """Validate exercise substitutions using Tavily + LLM (OpenRouter)"""
 
     SUBSTITUTION_CONTEXT = {
         "strength": "GREEN = similar 1RM loading potential and motor pattern. YELLOW = slight load reduction but same pattern. RED = fundamentally different pattern or significant load reduction.",
@@ -15,9 +35,17 @@ class ResearchValidator:
     }
 
     def __init__(self):
-        self.api_key = os.getenv("PERPLEXITY_API_KEY")
-        self.base_url = "https://api.perplexity.ai/chat/completions"
-        self.model = os.getenv("MODEL", "sonar") # Use 'sonar' as standard online model
+        self.tavily_api_key = os.getenv("TAVILY_API_KEY")
+        self.llm = LLMClient()
+        self.query_transformer = QueryTransformer(self.llm)
+
+        try:
+            self.tavily = TavilyClient(api_key=self.tavily_api_key) if self.tavily_api_key else None
+        except Exception as e:
+            print(f"⚠️  Tavily initialization failed: {e}")
+            self.tavily = None
+
+        print(f"[ResearchValidator] Tavily: {'YES' if self.tavily else 'NO'}, LLM: {'YES' if self.llm.api_key else 'NO'}")
 
     def validate_exercise_swap(
         self,
@@ -27,56 +55,65 @@ class ResearchValidator:
         goal: str = "hypertrophy"
     ) -> Dict:
         """
-        Query Perplexity API to validate exercise substitution.
-        Returns verdict (GREEN/YELLOW/RED) with research backing.
+        Validate exercise substitution using Tavily (search) + LLM (synthesis).
+        Returns GREEN/YELLOW/RED verdict with research backing.
         """
-
-        prompt = self._build_validation_prompt(original, replacement, reason, goal)
-        system_instructions = "You are a research validator for exercise prescription. Evaluate exercise substitutions based on peer-reviewed evidence from 2023-2025. Return verdicts as GREEN (equivalent/valid), YELLOW (suboptimal but acceptable), or RED (not recommended)."
-
-        # Try standard approach
-        messages = [
-            {"role": "system", "content": system_instructions},
-            {"role": "user", "content": prompt}
-        ]
-
         try:
-            response = self._call_perplexity_api(messages)
-            
-            # If 400 because of 'system' role, retry with merged user message
-            if response.status_code == 400 and "system" in response.text.lower():
-                print("⚠️ Retrying without system role...")
-                merged_prompt = f"{system_instructions}\n\n{prompt}"
-                response = self._call_perplexity_api([{"role": "user", "content": merged_prompt}])
+            search_context = ""
+            citations = []
 
-            print(f"DEBUG: Perplexity API Status: {response.status_code}")
-            if response.status_code != 200:
-                print(f"❌ Perplexity API ERROR DETAIL: {response.text}")
-                return self._error_fallback(f"API Error ({response.status_code}): {response.text}")
+            if self.tavily:
+                search_query = self.query_transformer.transform(
+                    query=f"{original} vs {replacement}",
+                    goal=goal,
+                    original_exercise=original,
+                    replacement_exercise=replacement
+                )
 
-            return self._parse_api_response(response.json())
+                print(f"🔍 Tavily search: {search_query}")
+                search_results = self._query_tavily(search_query)
+                search_context = search_results.get("context", "")
+                citations = search_results.get("citations", [])
+
+            prompt = self._build_validation_prompt(original, replacement, reason, goal, search_context)
+            system_instructions = "You are a research validator for exercise prescription. Evaluate exercise substitutions based on peer-reviewed evidence from 2020-2026. Return verdicts as GREEN (equivalent/valid), YELLOW (suboptimal but acceptable), or RED (not recommended)."
+
+            messages = [{"role": "user", "content": prompt}]
+
+            llm_response = self.llm.generate(messages, system_prompt=system_instructions, temperature=0.2, max_tokens=800)
+
+            if "error" in llm_response:
+                print(f"❌ LLM Error: {llm_response['error']}")
+                return self._error_fallback(llm_response['error'])
+
+            return self._parse_llm_response(llm_response, citations)
 
         except Exception as e:
             print(f"❌ Research Validator Crash: {e}")
             return self._error_fallback(str(e))
 
-    def _call_perplexity_api(self, messages):
-        return requests.post(
-            self.base_url,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "User-Agent": "ResFit-Research-Engine/1.0"
-            },
-            json={
-                "model": self.model,
-                "messages": messages,
-                "temperature": 0.2,
-                "return_citations": True
-            },
-            timeout=60
-        )
+    def _query_tavily(self, query: str) -> Dict:
+        """Search Tavily with academic domain filtering."""
+        if not self.tavily:
+            return {"context": "", "citations": []}
+
+        try:
+            response = self.tavily.search(
+                query=query,
+                search_depth="advanced",
+                max_results=5,
+                include_domains=ACADEMIC_DOMAINS
+            )
+
+            results = response.get("results", [])
+            context = "\n".join([f"[Source: {r['url']}]\n{r['content']}" for r in results])
+            citations = [r["url"] for r in results if r.get("url")]
+
+            return {"context": context, "citations": citations}
+
+        except Exception as e:
+            print(f"⚠️  Tavily search error: {e}")
+            return {"context": "", "citations": []}
 
     def _error_fallback(self, error_str: str) -> Dict:
         return {
@@ -87,58 +124,61 @@ class ResearchValidator:
             "timestamp": None
         }
 
-    def _build_validation_prompt(self, original, replacement, reason, goal):
+    def _build_validation_prompt(self, original, replacement, reason, goal, context: str = ""):
         goal_context = self.SUBSTITUTION_CONTEXT.get(goal, self.SUBSTITUTION_CONTEXT["hypertrophy"])
-        return f"""
-        Evaluate or suggest an exercise substitution for {goal}:
-        
-        ORIGINAL: {original}
-        PROPOSED REPLACEMENT/CONSTRAINT: {replacement}
-        REASON: {reason}
 
-        INSTRUCTION:
-        1. Evaluate biomechanical equivalence and effectiveness.
-        2. Analyze muscle activation (cite research 2023-2025).
-        3. Recommend a CANONICAL NAME if the input is vague.
+        base = f"""
+Evaluate or suggest an exercise substitution for {goal}:
 
-        Format response:
-        CANONICAL NAME: [Name]
-        VERDICT: [GREEN/YELLOW/RED]
-        PERCENTAGE: [XX]%
+ORIGINAL: {original}
+PROPOSED REPLACEMENT: {replacement}
+REASON: {reason}
 
-        Analysis: [Details...]
+INSTRUCTION:
+1. Evaluate biomechanical equivalence and effectiveness.
+2. Analyze muscle activation (cite research 2020-2026).
+3. Recommend a CANONICAL NAME if the input is vague.
 
-        Criteria for {goal}: {goal_context}
-        """
+Format response:
+CANONICAL NAME: [Name]
+VERDICT: [GREEN/YELLOW/RED]
+PERCENTAGE: [XX]%
 
-    def _parse_api_response(self, response_data: Dict) -> Dict:
-        try:
-            if 'choices' in response_data:
-                content = response_data['choices'][0]['message']['content']
-            elif 'output' in response_data:
-                content = response_data['output'][0]['message']['content']
-            else:
-                error_msg = response_data.get('error', {}).get('message', 'Unknown API Error')
-                raise KeyError(f"API Error: {error_msg}")
-        except (KeyError, IndexError, TypeError) as e:
-            print(f"❌ Parse Error: {e} - Data: {response_data}")
-            raise Exception(f"Invalid API response: {str(e)}")
+Analysis: [Details...]
 
-        citations = response_data.get('citations', [])
+Criteria for {goal}: {goal_context}
+"""
+
+        if context:
+            base = f"Provided Research Context:\n{context}\n\n{base}"
+
+        return base
+
+    def _parse_llm_response(self, response: Dict, tavily_citations: list) -> Dict:
+        content = response.get("content", "")
+
+        if not content:
+            return self._error_fallback("Empty LLM response")
+
+        citations = list(set(tavily_citations + response.get("citations", [])))
+
         canonical_match = re.search(r"CANONICAL NAME:\s*(.*)", content, re.IGNORECASE)
         corrected_name = canonical_match.group(1).strip() if canonical_match else None
 
-        # Detect verdict
         content_upper = content.upper()
-        if "GREEN" in content_upper: verdict = "green"
-        elif "YELLOW" in content_upper: verdict = "yellow"
-        elif "RED" in content_upper: verdict = "red"
-        else: verdict = "yellow"
+        if "GREEN" in content_upper:
+            verdict = "green"
+        elif "YELLOW" in content_upper:
+            verdict = "yellow"
+        elif "RED" in content_upper:
+            verdict = "red"
+        else:
+            verdict = "yellow"
 
         return {
             "verdict": verdict,
             "corrected_name": corrected_name,
             "reasoning": content,
             "citations": citations,
-            "timestamp": response_data.get('created')
+            "timestamp": response.get("created")
         }
