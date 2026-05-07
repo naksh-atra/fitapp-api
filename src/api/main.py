@@ -3,10 +3,6 @@ FitApp Workout Generator API v2.0
 Science-based weekly plans powered by YAML research prescriptions.
 """
 
-from fastapi import FastAPI, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, List
-import uvicorn
 import sys
 import os
 from pathlib import Path
@@ -14,14 +10,20 @@ from datetime import datetime
 import traceback
 from dotenv import load_dotenv
 from enum import Enum
-from auth import get_current_user
 
+# Add src to Python path before any other imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 load_dotenv(
     dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env.local",
     override=True
 )
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from fastapi import FastAPI, HTTPException, Depends, Query
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, List
+import uvicorn
+
+from src.api.auth import get_current_user
 
 try:
     from generator.workout_engine import WorkoutGenerator
@@ -41,7 +43,7 @@ except ImportError as e:
     ValidationCache       = None
     PrescriptionValidator = None
 
-from repositories import (
+from src.api.repositories import (
     save_workout, get_workout, list_workouts,
     get_cached_validation as db_get_cache,
     save_cached_validation as db_save_cache
@@ -136,7 +138,6 @@ class ValidateSwapRequest(BaseModel):
 def _get_verdict_emoji(verdict: str) -> str:
     return {"green": "🟢", "yellow": "🟡", "red": "🔴"}.get(verdict.lower(), "⚪")
 
-
 def _flatten_exercises(workout: Dict) -> List[Dict]:
     """
     Collect every exercise across all days of the weekly_plan.
@@ -157,7 +158,6 @@ def _flatten_exercises(workout: Dict) -> List[Dict]:
             else:
                 exercises.append(item)
     return exercises
-
 
 def _find_exercise_in_plan(workout: Dict, exercise_name: str) -> bool:
     """Return True if exercise_name appears anywhere in the weekly plan."""

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Dict, Optional
-from db import workouts_col, validation_cache_col
+from src.api.db import workouts_col, validation_cache_col
 
 
 def save_workout(user_id: str, workout_id: str, request_payload: Dict, data: Dict) -> None:
