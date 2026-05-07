@@ -4,24 +4,42 @@ from typing import Dict, List, Optional
 
 
 class LLMClient:
-    """Abstract LLM client supporting OpenRouter (Llama 3.3 70B)"""
+    """Modular LLM client - provider/config defined via environment variables"""
+
+    PROVIDER_URLS = {
+        "deepseek": "https://api.deepseek.com/v1/chat/completions",
+        "openrouter": "https://openrouter.ai/api/v1/chat/completions",
+    }
+
+    PROVIDER_KEYS = {
+        "deepseek": "DEEPSEEK_API_KEY",
+        "openrouter": "OPENROUTER_API_KEY",
+    }
 
     def __init__(self):
-        # self.api_key = os.getenv("OPENROUTER_API_KEY")
-        self.api_key = os.getenv("DEEPSEEK_API_KEY")
         self.provider = os.getenv("LLM_PROVIDER", "openrouter")
+
+        key_env = self.PROVIDER_KEYS.get(self.provider, "OPENROUTER_API_KEY")
+        self.api_key = os.getenv(key_env)
+
+        self.base_url = os.getenv("LLM_BASE_URL") or self._get_default_url()
+
         self.model = os.getenv("LLM_MODEL", "llama-3.3-70b-instruct")
-        # self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.base_url = "https://api.deepseek.com/v1/chat/completions"
+        self.temperature = float(os.getenv("LLM_TEMPERATURE", "0.0"))
+        self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "800"))
+
         self.site_url = "https://resfit.app"
         self.app_name = "ResFit-WorkoutEngine"
+
+    def _get_default_url(self) -> str:
+        return self.PROVIDER_URLS.get(self.provider, "https://openrouter.ai/api/v1/chat/completions")
 
     def generate(
         self,
         messages: List[Dict[str, str]],
         system_prompt: Optional[str] = None,
-        temperature: float = 0.2,
-        max_tokens: int = 1000
+        temperature: float = None,
+        max_tokens: int = None
     ) -> Dict:
         """
         Generate a response from the LLM.
@@ -29,12 +47,16 @@ class LLMClient:
         Args:
             messages: List of message dicts with 'role' and 'content'
             system_prompt: Optional system prompt override
-            temperature: Sampling temperature
-            max_tokens: Max tokens to generate
+            temperature: Sampling temperature (default: from LLM_TEMPERATURE env)
+            max_tokens: Max tokens (default: from LLM_MAX_TOKENS env)
 
         Returns:
             Dict with 'content', 'citations', 'model', 'created'
         """
+        if temperature is None:
+            temperature = self.temperature
+        if max_tokens is None:
+            max_tokens = self.max_tokens
         if not self.api_key:
             return {
                 "error": "No LLM API key configured",
@@ -95,8 +117,8 @@ class LLMClient:
         user_prompt: str,
         context: str,
         system_prompt: Optional[str] = None,
-        temperature: float = 0.2,
-        max_tokens: int = 1000
+        temperature: float = None,
+        max_tokens: int = None
     ) -> Dict:
         """
         Convenience method: Generate response with context provided as system message.
@@ -105,6 +127,8 @@ class LLMClient:
             user_prompt: User's question/query
             context: Context/background info to include
             system_prompt: Optional override for system instructions
+            temperature: Sampling temperature (default: from env)
+            max_tokens: Max tokens (default: from env)
             temperature: Sampling temperature
             max_tokens: Max tokens to generate
 
