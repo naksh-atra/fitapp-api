@@ -4,8 +4,8 @@ from typing import Dict, List
 from datetime import datetime
 from tavily import TavilyClient
 
-from repositories import get_cached_validation, save_cached_validation
-from utils import LLMClient, QueryTransformer
+from src.api.repositories import get_cached_validation, save_cached_validation
+from src.utils import LLMClient, QueryTransformer
 
 
 ACADEMIC_DOMAINS = [
