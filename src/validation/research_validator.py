@@ -1,10 +1,10 @@
 # src/validation/research_validator.py
 import os
 import re
-from typing import Dict
+from typing import Dict, Optional
 
 from tavily import TavilyClient
-from utils import LLMClient, QueryTransformer
+from src.utils import LLMClient, QueryTransformer
 
 
 ACADEMIC_DOMAINS = [
@@ -28,10 +28,10 @@ class ResearchValidator:
     """Validate exercise substitutions using Tavily + LLM (OpenRouter)"""
 
     SUBSTITUTION_CONTEXT = {
-        "strength": "GREEN = similar 1RM loading potential and motor pattern. YELLOW = slight load reduction but same pattern. RED = fundamentally different pattern or significant load reduction.",
-        "endurance": "GREEN = similar metabolic demand and rep tolerance at high reps. YELLOW = slightly lower endurance capacity. RED = exercise that limits reps or raises injury risk at high rep ranges.",
-        "fatloss": "GREEN = similar caloric expenditure and heart rate elevation. YELLOW = lower metabolic output but acceptable. RED = low-intensity isolation that significantly reduces metabolic output.",
-        "hypertrophy": "GREEN = similar muscle recruitment and volume capacity. YELLOW = 70-90% effective. RED = significant reduction in stimulus to target muscle."
+        "strength": "GREEN = same load type + same movement pattern (e.g., barbell→dumbbell). YELLOW = same pattern but load type differs. RED = different pattern OR barbell→bodyweight without equivalent load.",
+        "endurance": "GREEN = same energy system + similar rep capacity. YELLOW = slightly lower capacity. RED = different energy system OR isolation that limits max reps.",
+        "fatloss": "GREEN = same EPOC + similar heart rate response. YELLOW = lower output but still elevates HR. RED = low-intensity isolation or rest.",
+        "hypertrophy": "GREEN = same load profile + same muscle recruitment. YELLOW = similar but load differs. RED = different load type (barbell→bodyweight) OR reduced stimulus."
     }
 
     def __init__(self):
@@ -76,15 +76,17 @@ class ResearchValidator:
                 citations = search_results.get("citations", [])
 
             prompt = self._build_validation_prompt(original, replacement, reason, goal, search_context)
-            system_instructions = "You are a research validator for exercise prescription. Evaluate exercise substitutions based on peer-reviewed evidence from 2020-2026. Return verdicts as GREEN (equivalent/valid), YELLOW (suboptimal but acceptable), or RED (not recommended)."
+            system_instructions = "You are a strict exercise substitution validator. Use evidence from 2020-2026. GREEN only if exercises are equivalent in load type AND movement pattern. Equipment changes (barbell→bodyweight) default to YELLOW or RED. When uncertain, err on the side of RED. Output: CANONICAL NAME, VERDICT (GREEN/YELLOW/RED), PERCENTAGE, Analysis."
 
             messages = [{"role": "user", "content": prompt}]
 
-            llm_response = self.llm.generate(messages, system_prompt=system_instructions, temperature=0.2, max_tokens=800)
+            llm_response = self.llm.generate(messages, system_prompt=system_instructions, temperature=0.0, max_tokens=800)
 
             if "error" in llm_response:
                 print(f"❌ LLM Error: {llm_response['error']}")
                 return self._error_fallback(llm_response['error'])
+
+            print(f"🔎 LLM Response (content): {llm_response.get('content', '')[:300]}")
 
             return self._parse_llm_response(llm_response, citations)
 
@@ -175,10 +177,34 @@ Criteria for {goal}: {goal_context}
         else:
             verdict = "yellow"
 
+        conditions = self._extract_conditions(content, corrected_name)
+
         return {
             "verdict": verdict,
             "corrected_name": corrected_name,
             "reasoning": content,
             "citations": citations,
-            "timestamp": response.get("created")
+            "timestamp": response.get("created"),
+            "conditions": conditions
         }
+
+    def _extract_conditions(self, content: str, exercise_name: str) -> Optional[str]:
+        if not exercise_name:
+            return None
+
+        condition_keywords = [
+            "requires", "need to", "must", "should use", "with added",
+            "by using", "with weight", "progressive overload", "weight vest",
+            "added resistance", "additional weight", "weighted"
+        ]
+
+        content_lower = content.lower()
+        has_condition_keyword = any(kw in content_lower for kw in condition_keywords)
+
+        if has_condition_keyword and "yellow" in content_lower:
+            condition_phrase = "Conditions Required"
+            if "weight" in content_lower or "vest" in content_lower:
+                condition_phrase = "Weighted or Progressive Overload Required"
+            return condition_phrase
+
+        return None
