@@ -12,7 +12,7 @@ class LLMClient:
         self.provider = os.getenv("LLM_PROVIDER", "openrouter")
         self.model = os.getenv("LLM_MODEL", "llama-3.3-70b-instruct")
         # self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.base_url = "https://api.deepseek.com"
+        self.base_url = "https://api.deepseek.com/v1/chat/completions"
         self.site_url = "https://resfit.app"
         self.app_name = "ResFit-WorkoutEngine"
 
