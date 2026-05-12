@@ -1,5 +1,6 @@
 # src/api/db.py
 import os
+import ssl
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
@@ -8,33 +9,34 @@ load_dotenv(".env.local")
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 MONGODB_DB  = os.getenv("MONGODB_DB", "Fitapp")
 
+workouts_col = None
+validation_cache_col = None
+
 try:
-    # Production-hardened connection settings
-    client = MongoClient(
-        MONGODB_URI, 
-        serverSelectionTimeoutMS=30000,
-        connectTimeoutMS=20000,
-        socketTimeoutMS=20000,
+    kwargs = dict(
+        serverSelectionTimeoutMS=5000,
+        connectTimeoutMS=5000,
+        socketTimeoutMS=10000,
         heartbeatFrequencyMS=10000,
         maxPoolSize=10,
         retryWrites=True,
-        tls=True,
-        tlsAllowInvalidCertificates=True,
-        tlsAllowInvalidHostnames=True
     )
-    db     = client[MONGODB_DB]
-    workouts_col         = db["workouts"]
-    validation_cache_col = db["validation_cache"]
-    
-    # Force a check to see if we can actually reach the server
+
+    if "mongodb+srv" in MONGODB_URI:
+        kwargs["tls"] = True
+        kwargs["tlsAllowInvalidCertificates"] = True
+        kwargs["tlsAllowInvalidHostnames"] = True
+        kwargs["ssl_cert_reqs"] = ssl.CERT_NONE
+
+    client = MongoClient(MONGODB_URI, **kwargs)
     client.admin.command('ping')
-    
-    # Indexes (no-op if already exist)
+
+    db = client[MONGODB_DB]
+    workouts_col = db["workouts"]
+    validation_cache_col = db["validation_cache"]
+
     workouts_col.create_index([("workout_id", 1), ("user_id", 1)], unique=True)
     validation_cache_col.create_index("cache_key", unique=True)
-    print(f"✓ MongoDB connected: {MONGODB_DB}")
+    print("(i) MongoDB connected: " + MONGODB_DB)
 except Exception as e:
-    print(f"⚠️ MongoDB Warning (Continuing in Offline Mode): {e}")
-    # Application continues but these will be None
-    workouts_col = None
-    validation_cache_col = None
+    print("(i) MongoDB unavailable - continuing in offline mode")

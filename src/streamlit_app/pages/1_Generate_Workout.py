@@ -154,11 +154,11 @@ if st.session_state.current_workout:
 
         with st.expander(f"SCIENCE VALIDATED - {evidence_level}", expanded=False):
             if evidence_points:
-                with st.expander("View full evidence"):
-                    for point in evidence_points:
-                        st.markdown(f"**{point['heading']}**")
-                        st.markdown(point["body"])
-                        st.markdown("")
+                st.markdown("**Full Evidence**")
+                for point in evidence_points:
+                    st.markdown(f"**{point['heading']}**")
+                    st.markdown(point["body"])
+                    st.markdown("")
             citations = evidence_points[0].get("citations", []) if evidence_points else val.get("citations", [])
             if citations:
                 st.markdown("**Citations:**")

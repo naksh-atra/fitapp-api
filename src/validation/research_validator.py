@@ -1,7 +1,7 @@
 # src/validation/research_validator.py
 import os
 import re
-from typing import Dict, Optional
+from typing import Dict
 
 from tavily import TavilyClient
 from src.utils import LLMClient, QueryTransformer
@@ -177,7 +177,7 @@ Criteria for {goal}: {goal_context}
         else:
             verdict = "yellow"
 
-        conditions = self._extract_conditions(content, corrected_name)
+        conditions = "Review analysis - exercise may require modifications for equivalent stimulus" if verdict == "yellow" else None
 
         return {
             "verdict": verdict,
@@ -187,24 +187,3 @@ Criteria for {goal}: {goal_context}
             "timestamp": response.get("created"),
             "conditions": conditions
         }
-
-    def _extract_conditions(self, content: str, exercise_name: str) -> Optional[str]:
-        if not exercise_name:
-            return None
-
-        condition_keywords = [
-            "requires", "need to", "must", "should use", "with added",
-            "by using", "with weight", "progressive overload", "weight vest",
-            "added resistance", "additional weight", "weighted"
-        ]
-
-        content_lower = content.lower()
-        has_condition_keyword = any(kw in content_lower for kw in condition_keywords)
-
-        if has_condition_keyword and "yellow" in content_lower:
-            condition_phrase = "Conditions Required"
-            if "weight" in content_lower or "vest" in content_lower:
-                condition_phrase = "Weighted or Progressive Overload Required"
-            return condition_phrase
-
-        return None
