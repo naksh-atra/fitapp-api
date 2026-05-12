@@ -1,86 +1,103 @@
 import os
-import requests
-from typing import Dict, List
-import json
-from datetime import datetime
 import re
+from typing import Dict, List
+from datetime import datetime
 from tavily import TavilyClient
 
-from repositories import get_cached_validation, save_cached_validation
+from src.api.repositories import get_cached_validation, save_cached_validation
+from src.utils import LLMClient, QueryTransformer
+
+
+ACADEMIC_DOMAINS = [
+    "pubmed.ncbi.nlm.nih.gov",
+    "pmc.ncbi.nlm.nih.gov",
+    "journals.lww.com",
+    "sciencedirect.com",
+    "nih.gov",
+    "tandfonline.com",
+    "mdpi.com",
+    "bjsm.bmj.com",
+    "acsm.org",
+    "nsca.com",
+    "scholar.google.com",
+    "scopus.com",
+    "webofscience.com"
+]
+
 
 class PrescriptionValidator:
-    """Validate workout prescriptions against research"""
+    """Validate workout prescriptions using Tavily + LLM (OpenRouter)"""
 
     GOAL_CONTEXT = {
         "strength": {
             "focus": "maximal strength (1RM improvement)",
             "key_variables": "load >80% 1RM, rest 3-5 min, low reps 1-6, compound-dominant",
-            "citation_focus": "strength-specific meta-analyses, powerlifting RCTs, 1RM studies 2023-2025"
+            "citation_focus": "strength-specific meta-analyses, powerlifting RCTs, 1RM studies 2020-2026"
         },
         "endurance": {
             "focus": "muscular endurance and aerobic capacity",
             "key_variables": "high reps 15-30, short rest 20-60s, load <60% 1RM, circuit density",
-            "citation_focus": "endurance-RT interaction, ACSM guidelines, circuit training meta-analyses 2023-2025"
+            "citation_focus": "endurance-RT interaction, ACSM guidelines, circuit training meta-analyses 2020-2026"
         },
         "fatloss": {
             "focus": "fat mass reduction while preserving lean mass",
             "key_variables": "metabolic stress, HIIT-RT combination, moderate load moderate rep, short rest",
-            "citation_focus": "body composition RCTs, HIIT+RT combination studies 2023-2025"
+            "citation_focus": "body composition RCTs, HIIT+RT combination studies 2020-2026"
         },
         "hypertrophy": {
             "focus": "muscle hypertrophy",
             "key_variables": "volume 10-20 sets/muscle/week, reps 6-20, proximity to failure",
-            "citation_focus": "hypertrophy meta-analyses, volume-response studies 2023-2025"
+            "citation_focus": "hypertrophy meta-analyses, volume-response studies 2020-2026"
         }
     }
 
     def __init__(self):
-        self.api_key = os.getenv("PERPLEXITY_API_KEY")
         self.tavily_api_key = os.getenv("TAVILY_API_KEY")
-        self.api_url = "https://api.perplexity.ai/chat/completions"
-        self.model = os.getenv("MODEL", "sonar")
-        
+        self.llm = LLMClient()
+        self.query_transformer = QueryTransformer(self.llm)
+
         try:
             self.tavily = TavilyClient(api_key=self.tavily_api_key) if self.tavily_api_key else None
         except Exception as e:
             print(f"⚠️  Tavily initialization failed: {e}")
             self.tavily = None
-        
-        print(f"[PrescriptionValidator] API Keys loaded. Tavily: {'YES' if self.tavily else 'NO'}")
+
+        print(f"[PrescriptionValidator] Tavily: {'YES' if self.tavily else 'NO'}, LLM: {'YES' if self.llm.api_key else 'NO'}")
 
     def validate_prescription(self, goal: str, exercises: List[Dict], equipment: str = "gym", experience: str = "intermediate") -> Dict:
-        """Validate an entire workout prescription"""
+        """Validate an entire workout prescription using Tavily + OpenRouter"""
         cache_key = f"{goal}_{equipment}_{experience}"
         print(f"🔥 Cache key: {cache_key}")
 
-        # Check Mongo cache first
         cached = get_cached_validation(cache_key)
         if cached:
             print(f"✓ Using DB cached validation for {goal}")
             return cached
 
-        # Build research query
         query = self._build_validation_query(goal, exercises, equipment, experience)
 
         print(f"🔬 Validating {goal} prescription with research...")
-        
-        # Hybrid RAG: Search (Tavily) -> Synthesize (Perplexity)
+
         search_context = ""
+        citations = []
         if self.tavily:
+            search_query = self.query_transformer.transform(
+                query=f"evidence for {goal} workout {equipment} {experience} sports science",
+                goal=goal
+            )
             print(f"🔍 Searching Tavily for {goal} research...")
-            search_context = self._query_tavily(f"evidence for {goal} workout {equipment} {experience} sports science research 2024")
+            search_results = self._query_tavily(search_query)
+            search_context = search_results.get("context", "")
+            citations = search_results.get("citations", [])
 
-        # Query Perplexity
-        perplexity_result = self._query_perplexity(query, goal, context=search_context)
+        llm_result = self._query_llm(query, goal, context=search_context)
 
-        # Parse response
-        validation_result = self._parse_validation_response(perplexity_result, goal)
+        validation_result = self._parse_llm_response(llm_result, goal, citations)
 
-        # Only cache successful responses
         if validation_result.get('validated', False) and not validation_result['evidence_summary'].startswith('Error:'):
             meta = {"goal": goal, "equipment": equipment, "experience": experience}
             save_cached_validation(cache_key, meta, validation_result)
-        
+
         return validation_result
 
     def _build_validation_query(self, goal: str, exercises: List[Dict], equipment: str, experience: str) -> str:
@@ -102,27 +119,39 @@ Key variables to validate: {ctx['key_variables']}
 Prescription:
 - {exercises_text}
 
-Validate against 2023-2025 research:
+Validate against 2020-2026 research:
 1. Does this align with {goal} evidence?
 2. Are sets/reps/rest optimal for {ctx['focus']}?
 3. Is exercise selection appropriate?
 """
         return query.strip()
 
-    def _query_tavily(self, query: str) -> str:
-        """Search Tavily for raw science snippets"""
+    def _query_tavily(self, query: str) -> Dict:
+        """Search Tavily with academic domain filtering."""
         if not self.tavily:
-            return ""
+            return {"context": "", "citations": []}
+
         try:
-            response = self.tavily.search(query=query, search_depth="advanced", max_results=5)
-            return "\n".join([f"[Source: {r['url']}]\n{r['content']}" for r in response.get('results', [])])
+            response = self.tavily.search(
+                query=query,
+                search_depth="advanced",
+                max_results=5,
+                include_domains=ACADEMIC_DOMAINS
+            )
+
+            results = response.get("results", [])
+            context = "\n".join([f"[Source: {r['url']}]\n{r['content']}" for r in results])
+            citations = [r["url"] for r in results if r.get("url")]
+
+            return {"context": context, "citations": citations}
+
         except Exception as e:
             print(f"⚠️  Tavily search error: {e}")
-            return ""
+            return {"context": "", "citations": []}
 
-    def _query_perplexity(self, query: str, goal: str, context: str = "") -> dict:
-        if not self.api_key:
-            return {"error": "No API key configured", "status_code": 500}
+    def _query_llm(self, query: str, goal: str, context: str = "") -> dict:
+        if not self.llm.api_key:
+            return {"error": "No LLM API key configured", "status_code": 500}
 
         if context:
             system_prompt = (
@@ -148,43 +177,27 @@ Validate against 2023-2025 research:
             )
             user_content = f"Goal: {goal}\nPrescription: {query}"
 
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_content}
-            ],
-            "temperature": 0.1,
-            "max_tokens": 500
-        }
+        messages = [{"role": "user", "content": user_content}]
 
-        try:
-            response = requests.post(self.api_url, json=payload, headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}, timeout=25)
-            if response.status_code != 200:
-                return {"error": f"HTTP {response.status_code}", "status_code": response.status_code}
-            
-            result = response.json()
-            raw_content = result['choices'][0]['message']['content']
-            api_citations = result.get('citations', [])
-            return {"success": True, "content": raw_content, "api_citations": api_citations}
-        except Exception as e:
-            return {"error": str(e), "status_code": 500}
+        return self.llm.generate(messages, system_prompt=system_prompt, temperature=0.1, max_tokens=500)
 
-    def _parse_validation_response(self, response: dict, goal: str) -> Dict:
+    def _parse_llm_response(self, response: dict, goal: str, tavily_citations: list) -> Dict:
         if "error" in response:
-            return {"validated": False, "goal": goal, "evidence_summary": f"Error: {response['error']}", "citations": [], "confidence": "unknown", "validated_at": datetime.now().isoformat(), "source": "perplexity_error"}
+            return {"validated": False, "goal": goal, "evidence_summary": f"Error: {response['error']}", "citations": [], "confidence": "unknown", "validated_at": datetime.now().isoformat(), "source": "openrouter_error"}
 
-        raw_response = response["content"]
-        api_citations = response.get("api_citations", [])
+        raw_response = response.get("content", "")
+        api_citations = response.get("citations", [])
         text_urls = re.findall(r'https?://[^\s\)]+', raw_response)
-        combined_urls = list(set(api_citations + text_urls))
-        
-        citations = [u for u in combined_urls if not any(x in u.lower() for x in ['api.perplexity.ai', 'localhost', '127.0.0.1', 'example.com', 'streamlit.io'])]
+        combined_urls = list(set(tavily_citations + api_citations + text_urls))
+
+        citations = [u for u in combined_urls if not any(x in u.lower() for x in ['api.openrouter.ai', 'localhost', '127.0.0.1', 'example.com', 'streamlit.io'])]
 
         text = raw_response.lower()
         confidence = "medium"
-        if any(kw in text for kw in ["strongly supported", "aligns with", "highly effective", "optimal"]): confidence = "high"
-        if any(kw in text for kw in ["insufficient evidence", "no scientific evidence", "unsafe"]): confidence = "low"
+        if any(kw in text for kw in ["strongly supported", "aligns with", "highly effective", "optimal"]):
+            confidence = "high"
+        if any(kw in text for kw in ["insufficient evidence", "no scientific evidence", "unsafe"]):
+            confidence = "low"
 
         return {
             "validated": True,
@@ -193,5 +206,5 @@ Validate against 2023-2025 research:
             "citations": citations[:8] if citations else ['No direct citations available'],
             "confidence": confidence,
             "validated_at": datetime.now().isoformat(),
-            "source": "perplexity_api"
+            "source": "openrouter_api"
         }

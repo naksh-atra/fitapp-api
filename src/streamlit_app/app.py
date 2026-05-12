@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from style import apply_custom_theme, render_sidebar, render_exercise_card
+from style import apply_custom_theme, render_sidebar
 
 # Page config
 st.set_page_config(
@@ -40,7 +40,7 @@ with col1:
         st.switch_page("pages/1_Generate_Workout.py")
 
 with col2:
-    st.image("src/streamlit_app/assets/resfit_banner.png", width="stretch")
+    st.image("C:/Users/Acer/Desktop/ProjectFit/fitapp-api/src/streamlit_app/assets/resfit_banner.png")
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 

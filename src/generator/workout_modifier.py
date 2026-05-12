@@ -8,7 +8,7 @@ updated full weekly plan with a new workout_id and modification history.
 
 import copy
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 
 class WorkoutModifier:

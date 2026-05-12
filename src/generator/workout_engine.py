@@ -15,8 +15,6 @@ import re
 from typing import Dict, List, Any, Optional
 from pathlib import Path
 
-from .exercise_selector import ExerciseSelector
-
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
 ACTIVE_RECOVERY_SESSION = {
@@ -145,25 +143,6 @@ class WorkoutGenerator:
             "evidence_level":          prescription["metadata"]["evidence_level"],
             "weekly_plan":             plan["weekly_plan"],
         }
-
-    # -----------------------------------------------------------------------
-    # Backward-compat shim - used by /test endpoint only
-    # -----------------------------------------------------------------------
-    def generate_workout(
-        self,
-        goal: str,
-        equipment: str = "gym",
-        experience: str = "intermediate"
-    ) -> Dict:
-        """
-        Thin shim: generates weekly plan and surfaces Monday's session as
-        'exercises' so the /test endpoint and existing unit tests don't break.
-        """
-        weekly = self.generate_weekly_plan(goal, equipment, experience)
-        monday = weekly["weekly_plan"].get("monday", {})
-        weekly["exercises"] = monday.get("exercises", [])
-        weekly["session_type"] = monday.get("session_type", "main")
-        return weekly
 
     # -----------------------------------------------------------------------
     # HYPERTROPHY - Push/Pull/Legs × 2  (6 days, Sunday rest)

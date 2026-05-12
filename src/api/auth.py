@@ -6,7 +6,8 @@ import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-JWT_SECRET = os.getenv("JWT_SECRET") or "devsecretapplepie"
+def get_jwt_secret() -> str:
+    return os.getenv("JWT_SECRET") or "devsecretapplepie"
 JWT_ALGORITHM = "HS256"
 
 security = HTTPBearer(auto_error=False)
@@ -14,7 +15,7 @@ security = HTTPBearer(auto_error=False)
 def create_access_token(user_id: str, expires_minutes: int = 60) -> str:
     expire = datetime.utcnow() + timedelta(minutes=expires_minutes)
     to_encode = {"sub": user_id, "exp": expire}
-    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt.encode(to_encode, get_jwt_secret(), algorithm=JWT_ALGORITHM)
 
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
@@ -28,7 +29,7 @@ def get_current_user(
 
     token = credentials.credentials
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
         print(f"JWT payload: {payload}") 
         
     except jwt.ExpiredSignatureError:

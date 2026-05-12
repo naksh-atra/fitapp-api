@@ -106,16 +106,24 @@ if validate_button:
 if st.session_state.last_validation:
     val_data = st.session_state.last_validation
     result   = val_data["result"]
+    conditions = result.get("conditions")
     corrected = result.get("corrected_name", val_data["replacement"])
 
     v_color = result["verdict"].lower()
+    display_name = corrected
+    if conditions:
+        display_name = f"{corrected} ({conditions})"
+
     st.markdown(f"""
     <div class="verdict-card verdict-{v_color}">
         <h3 style="color:var(--resfit-orange);">{result.get('verdict_color','⚪')} VERDICT: {result['verdict'].upper()}</h3>
-        <p style="color:white; font-weight:bold;">CONFIRMED EXERCISE: {corrected.upper()}</p>
+        <p style="color:white; font-weight:bold;">CONFIRMED EXERCISE: {display_name.upper()}</p>
         <p style="color:#B0B0B0;">{result['reasoning']}</p>
     </div>
     """, unsafe_allow_html=True)
+
+    if conditions:
+        st.warning(f"⚠️ This substitution has conditions: {conditions}. Review the analysis above before applying.")
 
     if result.get("citations"):
         with st.expander("📚 VIEW RESEARCH CITATIONS"):
@@ -124,7 +132,7 @@ if st.session_state.last_validation:
 
     if result["can_proceed"]:
         st.markdown("### STEP 3: COMMIT MODIFICATION")
-        if st.button(f"✅ APPLY {corrected.upper()} TO PROTOCOL", use_container_width=True):
+        if st.button(f"✅ APPLY {display_name.upper()} TO PROTOCOL", use_container_width=True):
             with st.spinner("💾 REGISTERING PROTOCOL CHANGE..."):
                 try:
                     api = FitAppAPI(st.session_state.api_url, token=st.session_state.auth_token)
@@ -132,7 +140,7 @@ if st.session_state.last_validation:
                         workout_id=st.session_state.workout_id,
                         modification_id=result["modification_id"],
                         original_exercise=val_data["original"],
-                        replacement_exercise=corrected,
+                        replacement_exercise=display_name,
                         verdict=result["verdict"],
                         reasoning=result["reasoning"],
                         citations=result["citations"],
